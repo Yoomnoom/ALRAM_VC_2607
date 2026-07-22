@@ -10,6 +10,7 @@ const stopBtn = document.getElementById("stopBtn");
 const hourHand = document.getElementById("hourHand");
 const minuteHand = document.getElementById("minuteHand");
 const secondHand = document.getElementById("secondHand");
+const weatherEl = document.getElementById("weather");
 
 const STORAGE_KEY = "alarms";
 let alarms = loadAlarms();
@@ -192,6 +193,25 @@ function renderAlarms() {
   }
 }
 
+const WEATHER_URL =
+  "https://api.openweathermap.org/data/4.0/onecall/current?lat=37.5665&lon=126.978&appid=31b8c708a247a26b672126170848810f";
+
+async function loadWeather() {
+  try {
+    const res = await fetch(WEATHER_URL);
+    if (!res.ok) throw new Error("weather request failed: " + res.status);
+    const data = await res.json();
+    const kelvin = data.current?.temp ?? data.data?.[0]?.temp;
+    if (typeof kelvin !== "number") throw new Error("no temp field in response");
+    const celsius = (kelvin - 273.15).toFixed(1);
+    weatherEl.textContent = `서울 현재 기온: ${celsius}°C`;
+  } catch (err) {
+    weatherEl.textContent = "기온 정보를 불러올 수 없습니다.";
+    console.error(err);
+  }
+}
+
 setInterval(updateClock, 1000);
 updateClock();
 renderAlarms();
+loadWeather();

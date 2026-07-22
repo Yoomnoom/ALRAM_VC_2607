@@ -240,6 +240,13 @@ h1 {
   padding: 20px 0;
 }
 
+.weather {
+  text-align: center;
+  color: #8a94a0;
+  font-size: 13px;
+  margin-top: 18px;
+}
+
 .ringing-overlay {
   display: none;
   position: fixed;
