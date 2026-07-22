@@ -9,37 +9,37 @@ body {
   align-items: center;
   justify-content: center;
   font-family: "Segoe UI", "Malgun Gothic", sans-serif;
-  background: linear-gradient(160deg, #cdeaff 0%, #a8d8f5 45%, #8ec8ee 100%);
-  color: #5a4632;
+  background-image: url("images/wall-texture.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: #3d3a36;
 }
 
 .app {
   width: 360px;
   max-width: 90vw;
-  padding: 24px;
-  background: #fff8ec;
-  border: 4px solid #7fc2e8;
+  padding: 28px 24px;
+  background: #fbfbf9;
   border-radius: 28px;
-  box-shadow: 0 12px 0 rgba(127, 194, 232, 0.35), 0 16px 30px rgba(60, 110, 150, 0.25);
 }
 
 .hero-clock {
   position: relative;
   width: 120px;
-  margin: -50px auto 8px;
+  margin: -50px auto 12px;
 }
 
 .hero-image {
   display: block;
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 8px 10px rgba(60, 110, 150, 0.35));
 }
 
 .hand-pivot {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: 51.6%;
+  top: 50.7%;
   width: 0;
   height: 0;
 }
@@ -70,84 +70,80 @@ body {
   width: 2px;
   height: 32px;
   margin-left: -1px;
-  background: #ffbe3d;
+  background: #8ec3e0;
 }
 
 .hand-pivot::after {
   content: "";
   position: absolute;
-  left: -3px;
-  top: -3px;
-  width: 6px;
-  height: 6px;
+  left: -4px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #ffcc4d;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  background: #8ec3e0;
 }
 
 h1 {
   text-align: center;
   margin: 0 0 16px;
-  font-size: 24px;
-  color: #4a86ab;
-  text-shadow: 0 1px 0 #fff;
+  font-size: 22px;
+  font-weight: 700;
+  color: #3d3a36;
 }
 
 .clock {
   text-align: center;
-  font-size: 40px;
+  font-size: 38px;
   font-weight: bold;
   letter-spacing: 2px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   font-variant-numeric: tabular-nums;
-  color: #b5651d;
-  background: #fef6e4;
-  border: 3px solid #f3d9a4;
-  border-radius: 18px;
-  padding: 8px 0;
+  color: #3d3a36;
+  background: #eef4f8;
+  border-radius: 20px;
+  padding: 12px 0;
 }
 
 .add-alarm {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 22px;
 }
 
 .add-alarm input {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 2px solid #bfe3f7;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: none;
   outline: none;
   font-size: 15px;
-  background: #fff;
-  color: #5a4632;
+  background: #eef4f8;
+  color: #3d3a36;
 }
 
 .add-alarm input:focus {
-  border-color: #6cc0e8;
+  background: #e0ebf2;
 }
 
 .add-alarm button {
-  padding: 10px;
+  padding: 12px;
   border: none;
-  border-radius: 12px;
-  background: #ffb84d;
-  color: #6b3f00;
+  border-radius: 14px;
+  background: #8ec3e0;
+  color: #fff;
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 4px 0 #e69b2e;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: background 0.15s ease;
 }
 
 .add-alarm button:hover {
-  background: #ffc464;
+  background: #79b0d4;
 }
 
 .add-alarm button:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #e69b2e;
+  background: #5f97bd;
 }
 
 .alarm-list {
@@ -165,10 +161,9 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  background: #eaf6ff;
-  border: 2px solid #cfe9f8;
-  border-radius: 14px;
+  padding: 14px 16px;
+  background: #eef4f8;
+  border-radius: 18px;
 }
 
 .alarm-item.disabled {
@@ -184,18 +179,18 @@ h1 {
 .alarm-info .time {
   font-size: 20px;
   font-weight: bold;
-  color: #3d7ea6;
+  color: #5f97bd;
 }
 
 .alarm-info .label {
   font-size: 12px;
-  color: #8a7860;
+  color: #8a94a0;
 }
 
 .alarm-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .toggle-btn {
@@ -203,14 +198,14 @@ h1 {
   height: 24px;
   border-radius: 12px;
   border: none;
-  background: #cbd5cf;
+  background: #d8e6ee;
   position: relative;
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .toggle-btn.on {
-  background: #6fcf97;
+  background: #8ec3e0;
 }
 
 .toggle-btn::after {
@@ -223,7 +218,6 @@ h1 {
   background: #fff;
   border-radius: 50%;
   transition: transform 0.15s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-btn.on::after {
@@ -233,7 +227,7 @@ h1 {
 .delete-btn {
   border: none;
   background: transparent;
-  color: #e08a8a;
+  color: #8ec3e0;
   font-size: 18px;
   cursor: pointer;
   line-height: 1;
@@ -241,7 +235,7 @@ h1 {
 
 .empty-msg {
   text-align: center;
-  color: #8a7860;
+  color: #8a94a0;
   font-size: 14px;
   padding: 20px 0;
 }
@@ -250,7 +244,7 @@ h1 {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(74, 134, 171, 0.55);
+  background: rgba(74, 64, 56, 0.45);
   align-items: center;
   justify-content: center;
   z-index: 10;
@@ -262,16 +256,14 @@ h1 {
 
 .ringing-box {
   text-align: center;
-  background: #fff8ec;
-  border: 4px solid #7fc2e8;
+  background: #fbfbf9;
   padding: 40px 32px;
-  border-radius: 24px;
-  animation: shake 0.4s infinite;
+  border-radius: 28px;
 }
 
 .ringing-label {
   font-size: 18px;
-  color: #8a7860;
+  color: #8a94a0;
   margin: 0 0 8px;
 }
 
@@ -279,24 +271,22 @@ h1 {
   font-size: 48px;
   font-weight: bold;
   margin: 0 0 24px;
-  color: #b5651d;
+  color: #3d3a36;
 }
 
 .ringing-box button {
   padding: 12px 28px;
   border: none;
-  border-radius: 14px;
-  background: #ffb84d;
-  color: #6b3f00;
+  border-radius: 16px;
+  background: #8ec3e0;
+  color: #fff;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 4px 0 #e69b2e;
 }
 
 .ringing-box button:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #e69b2e;
+  background: #5f97bd;
 }
 
 @keyframes shake {
