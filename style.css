@@ -26,8 +26,8 @@ body {
 
 .hero-clock {
   position: relative;
-  width: 120px;
-  margin: -50px auto 12px;
+  width: 180px;
+  margin: 0 auto 16px;
 }
 
 .hero-image {
@@ -49,37 +49,37 @@ body {
   left: 0;
   bottom: 0;
   transform-origin: 50% 100%;
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .hour-hand {
-  width: 4px;
-  height: 18px;
-  margin-left: -2px;
+  width: 6px;
+  height: 27px;
+  margin-left: -3px;
   background: #4a4a4a;
 }
 
 .minute-hand {
-  width: 3px;
-  height: 27px;
-  margin-left: -1.5px;
+  width: 4.5px;
+  height: 40.5px;
+  margin-left: -2.25px;
   background: #4a4a4a;
 }
 
 .second-hand {
-  width: 2px;
-  height: 32px;
-  margin-left: -1px;
+  width: 3px;
+  height: 48px;
+  margin-left: -1.5px;
   background: #8ec3e0;
 }
 
 .hand-pivot::after {
   content: "";
   position: absolute;
-  left: -4px;
-  top: -4px;
-  width: 8px;
-  height: 8px;
+  left: -6px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #8ec3e0;
 }
