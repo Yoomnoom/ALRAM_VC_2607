@@ -126,7 +126,73 @@ h1 {
   background: #e0ebf2;
 }
 
-.add-alarm button {
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 12px;
+  color: #8a94a0;
+  font-weight: bold;
+  padding-left: 2px;
+}
+
+.day-picker {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.day-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  border-radius: 999px;
+  background: #eef4f8;
+  color: #8a94a0;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
+}
+
+.day-btn:hover {
+  transform: translateY(-1px);
+}
+
+.day-btn.selected {
+  background: #8ec3e0;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 3px 8px rgba(142, 195, 224, 0.5);
+}
+
+.add-alarm select {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: #eef4f8;
+  color: #3d3a36;
+  cursor: pointer;
+}
+
+.time-display {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  background: #eef4f8;
+  color: #3d3a36;
+  text-align: left;
+  cursor: pointer;
+}
+
+#addBtn {
   padding: 12px;
   border: none;
   border-radius: 14px;
@@ -138,11 +204,11 @@ h1 {
   transition: background 0.15s ease;
 }
 
-.add-alarm button:hover {
+#addBtn:hover {
   background: #79b0d4;
 }
 
-.add-alarm button:active {
+#addBtn:active {
   background: #5f97bd;
 }
 
@@ -182,9 +248,19 @@ h1 {
   color: #5f97bd;
 }
 
+.alarm-info .days {
+  font-size: 11px;
+  color: #8a94a0;
+}
+
 .alarm-info .label {
   font-size: 12px;
   color: #8a94a0;
+}
+
+.alarm-info .meta {
+  font-size: 10px;
+  color: #a8b0b8;
 }
 
 .alarm-actions {
@@ -281,19 +357,245 @@ h1 {
   color: #3d3a36;
 }
 
-.ringing-box button {
+.ringing-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ringing-actions button {
   padding: 12px 28px;
   border: none;
   border-radius: 16px;
-  background: #8ec3e0;
-  color: #fff;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
 }
 
-.ringing-box button:active {
+#stopBtn {
+  background: #8ec3e0;
+  color: #fff;
+}
+
+#stopBtn:active {
   background: #5f97bd;
+}
+
+.ringing-box .snooze-btn {
+  background: #eef4f8;
+  color: #5f97bd;
+}
+
+.ringing-box .snooze-btn:active {
+  background: #d8e6ee;
+}
+
+.snooze-picker {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 0 0 18px;
+}
+
+.snooze-min-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #eef4f8;
+  color: #8a94a0;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.snooze-min-btn.selected {
+  background: #8ec3e0;
+  color: #fff;
+  font-weight: bold;
+}
+
+.time-picker-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(74, 64, 56, 0.45);
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.time-picker-overlay.show {
+  display: flex;
+}
+
+.time-picker-box {
+  background: #fbfbf9;
+  padding: 28px 24px;
+  border-radius: 28px;
+  text-align: center;
+}
+
+.time-picker-numbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.time-picker-numbers input {
+  width: 56px;
+  padding: 8px 0;
+  border: none;
+  border-radius: 12px;
+  outline: none;
+  background: #eef4f8;
+  color: #3d3a36;
+  font-size: 26px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.time-picker-numbers .colon {
+  font-size: 26px;
+  font-weight: bold;
+  color: #3d3a36;
+}
+
+.ampm-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 6px;
+}
+
+.ampm-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #eef4f8;
+  color: #8a94a0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ampm-btn.selected {
+  background: #8ec3e0;
+  color: #fff;
+  font-weight: bold;
+}
+
+.mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mode-btn {
+  padding: 6px 20px;
+  border: none;
+  border-radius: 999px;
+  background: #eef4f8;
+  color: #8a94a0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mode-btn.selected {
+  background: #8ec3e0;
+  color: #fff;
+  font-weight: bold;
+}
+
+.analog-clock {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #eef4f8;
+  touch-action: none;
+  user-select: none;
+}
+
+.clock-face {
+  position: absolute;
+  inset: 0;
+}
+
+.tick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px;
+  text-align: center;
+  line-height: 24px;
+  font-size: 13px;
+  color: #3d3a36;
+  transform: rotate(calc(30deg * var(--i))) translate(0, -78px) rotate(calc(-30deg * var(--i)));
+}
+
+.clock-hand {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform-origin: 50% 100%;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.pick-hour-hand {
+  width: 5px;
+  height: 50px;
+  margin-left: -2.5px;
+  background: #3d3a36;
+}
+
+.pick-minute-hand {
+  width: 3px;
+  height: 75px;
+  margin-left: -1.5px;
+  background: #8ec3e0;
+}
+
+.clock-center-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  background: #8ec3e0;
+  border-radius: 50%;
+}
+
+.time-picker-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.picker-cancel,
+.picker-confirm {
+  padding: 10px 26px;
+  border: none;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.picker-cancel {
+  background: #eef4f8;
+  color: #8a94a0;
+}
+
+.picker-confirm {
+  background: #8ec3e0;
+  color: #fff;
 }
 
 @keyframes shake {
