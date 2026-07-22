@@ -1,0 +1,214 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+  background: linear-gradient(135deg, #1f1c2c, #4a4275);
+  color: #fff;
+}
+
+.app {
+  width: 360px;
+  max-width: 90vw;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+h1 {
+  text-align: center;
+  margin: 0 0 12px;
+  font-size: 24px;
+}
+
+.clock {
+  text-align: center;
+  font-size: 40px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.add-alarm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.add-alarm input {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  font-size: 15px;
+}
+
+.add-alarm button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.add-alarm button:hover {
+  background: #ff4c4c;
+}
+
+.alarm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.alarm-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.alarm-item.disabled {
+  opacity: 0.45;
+}
+
+.alarm-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alarm-info .time {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.alarm-info .label {
+  font-size: 12px;
+  color: #ddd;
+}
+
+.alarm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-btn {
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: #666;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.toggle-btn.on {
+  background: #4caf50;
+}
+
+.toggle-btn::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.toggle-btn.on::after {
+  transform: translateX(18px);
+}
+
+.delete-btn {
+  border: none;
+  background: transparent;
+  color: #ff8080;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.empty-msg {
+  text-align: center;
+  color: #ccc;
+  font-size: 14px;
+  padding: 20px 0;
+}
+
+.ringing-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.ringing-overlay.show {
+  display: flex;
+}
+
+.ringing-box {
+  text-align: center;
+  background: #2b2740;
+  padding: 40px 32px;
+  border-radius: 20px;
+  animation: shake 0.4s infinite;
+}
+
+.ringing-label {
+  font-size: 18px;
+  color: #ddd;
+  margin: 0 0 8px;
+}
+
+.ringing-time {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 0 0 24px;
+}
+
+.ringing-box button {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
