@@ -12,11 +12,21 @@ const hourHand = document.getElementById("hourHand");
 const minuteHand = document.getElementById("minuteHand");
 const secondHand = document.getElementById("secondHand");
 const weatherEl = document.getElementById("weather");
+const weatherBg = document.getElementById("weatherBg");
+const weatherPreviewSelect = document.getElementById("weatherPreviewSelect");
 const dayPicker = document.getElementById("dayPicker");
 const dayButtons = dayPicker.querySelectorAll(".day-btn");
 const alarmSoundSelect = document.getElementById("alarmSound");
 const snoozePicker = document.getElementById("snoozePicker");
 const snoozeMinButtons = snoozePicker.querySelectorAll(".snooze-min-btn");
+const openAddBtn = document.getElementById("openAddBtn");
+const addAlarmOverlay = document.getElementById("addAlarmOverlay");
+const cancelAddBtn = document.getElementById("cancelAddBtn");
+const repeatTypeSelect = document.getElementById("repeatType");
+const customDaysGroup = document.getElementById("customDaysGroup");
+const intervalGroup = document.getElementById("intervalGroup");
+const intervalStartDate = document.getElementById("intervalStartDate");
+const intervalDaysInput = document.getElementById("intervalDays");
 
 const timePickerOverlay = document.getElementById("timePickerOverlay");
 const hourInput = document.getElementById("hourInput");
@@ -104,11 +114,21 @@ timePickerConfirm.addEventListener("click", () => {
   closeTimePicker();
 });
 
+hourInput.addEventListener("focus", () => {
+  activeMode = "hour";
+  updatePickerUI();
+});
+
 hourInput.addEventListener("input", () => {
   let v = parseInt(hourInput.value, 10);
   if (Number.isNaN(v)) return;
   v = Math.min(12, Math.max(1, v));
   pickHour = v;
+  updatePickerUI();
+});
+
+minuteInput.addEventListener("focus", () => {
+  activeMode = "minute";
   updatePickerUI();
 });
 
@@ -165,6 +185,10 @@ analogClock.addEventListener("pointermove", (e) => {
 
 analogClock.addEventListener("pointerup", () => {
   draggingClock = false;
+  if (activeMode === "hour") {
+    activeMode = "minute";
+    updatePickerUI();
+  }
 });
 
 analogClock.addEventListener("pointercancel", () => {
@@ -194,12 +218,66 @@ dayButtons.forEach((btn) => {
 });
 
 function formatDays(days) {
-  if (!days || days.length === 0) return "매일";
-  if (days.length === 7) return "매일";
+  if (!days || days.length === 0) return "요일 미선택";
   return [...days]
     .sort((a, b) => a - b)
     .map((d) => DAY_NAMES[d])
     .join("");
+}
+
+function todayISO() {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+function getRepeat(alarm) {
+  if (alarm.repeat) return alarm.repeat;
+  if (alarm.days && alarm.days.length > 0) return { type: "custom", days: alarm.days };
+  return { type: "daily" };
+}
+
+function matchesRepeat(alarm, now) {
+  const repeat = getRepeat(alarm);
+  switch (repeat.type) {
+    case "once":
+    case "daily":
+      return true;
+    case "weekdays": {
+      const day = now.getDay();
+      return day >= 1 && day <= 5;
+    }
+    case "custom":
+      return (repeat.days || []).includes(now.getDay());
+    case "interval": {
+      if (!repeat.startDate) return false;
+      const [sy, sm, sd] = repeat.startDate.split("-").map(Number);
+      const startMidnight = new Date(sy, sm - 1, sd);
+      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffDays = Math.round((todayMidnight - startMidnight) / 86400000);
+      const cycle = repeat.intervalDays || 1;
+      return diffDays >= 0 && diffDays % cycle === 0;
+    }
+    default:
+      return true;
+  }
+}
+
+function formatRepeat(alarm) {
+  const repeat = getRepeat(alarm);
+  switch (repeat.type) {
+    case "once":
+      return "한 번만";
+    case "daily":
+      return "매일";
+    case "weekdays":
+      return "월-금";
+    case "custom":
+      return formatDays(repeat.days);
+    case "interval":
+      return `${repeat.intervalDays || 1}일마다`;
+    default:
+      return "매일";
+  }
 }
 
 function loadAlarms() {
@@ -245,15 +323,18 @@ function checkAlarms(now) {
   if (now.getSeconds() !== 0) return;
 
   for (const alarm of alarms) {
-    const daysMatch = !alarm.days || alarm.days.length === 0 || alarm.days.includes(now.getDay());
     if (
       alarm.enabled &&
-      daysMatch &&
+      matchesRepeat(alarm, now) &&
       alarm.time === hhmm &&
       alarm.lastTriggered !== hhmm + "_" + now.toDateString()
     ) {
       alarm.lastTriggered = hhmm + "_" + now.toDateString();
+      if (getRepeat(alarm).type === "once") {
+        alarm.enabled = false;
+      }
       saveAlarms();
+      renderAlarms();
       triggerAlarm(alarm);
       break;
     }
@@ -357,16 +438,71 @@ snoozeBtn.addEventListener("click", () => {
   }
 });
 
+function resetAddForm() {
+  selectedTime = null;
+  timeDisplayBtn.textContent = "시간을 선택하세요";
+  alarmLabelInput.value = "";
+  selectedDays = [];
+  dayButtons.forEach((btn) => btn.classList.remove("selected"));
+  alarmSoundSelect.value = "beep";
+  repeatTypeSelect.value = "daily";
+  customDaysGroup.hidden = true;
+  intervalGroup.hidden = true;
+  intervalStartDate.value = todayISO();
+  intervalDaysInput.value = 2;
+}
+
+repeatTypeSelect.addEventListener("change", () => {
+  const v = repeatTypeSelect.value;
+  customDaysGroup.hidden = v !== "custom";
+  intervalGroup.hidden = v !== "interval";
+  if (v === "interval" && !intervalStartDate.value) {
+    intervalStartDate.value = todayISO();
+  }
+});
+
+openAddBtn.addEventListener("click", () => {
+  addAlarmOverlay.classList.add("show");
+});
+
+cancelAddBtn.addEventListener("click", () => {
+  resetAddForm();
+  addAlarmOverlay.classList.remove("show");
+});
+
 addBtn.addEventListener("click", () => {
   if (!selectedTime) {
     alert("알람 시간을 선택해주세요.");
     return;
   }
+
+  const repeatValue = repeatTypeSelect.value;
+  let repeat;
+  if (repeatValue === "custom") {
+    if (selectedDays.length === 0) {
+      alert("반복할 요일을 선택해주세요.");
+      return;
+    }
+    repeat = { type: "custom", days: [...selectedDays].sort((a, b) => a - b) };
+  } else if (repeatValue === "interval") {
+    if (!intervalStartDate.value) {
+      alert("시작일을 선택해주세요.");
+      return;
+    }
+    repeat = {
+      type: "interval",
+      startDate: intervalStartDate.value,
+      intervalDays: Number(intervalDaysInput.value) || 1,
+    };
+  } else {
+    repeat = { type: repeatValue };
+  }
+
   alarms.push({
     id: Date.now(),
     time: selectedTime,
     label: alarmLabelInput.value.trim(),
-    days: [...selectedDays].sort((a, b) => a - b),
+    repeat,
     sound: alarmSoundSelect.value,
     enabled: true,
     lastTriggered: null,
@@ -374,12 +510,8 @@ addBtn.addEventListener("click", () => {
   alarms.sort((a, b) => a.time.localeCompare(b.time));
   saveAlarms();
   renderAlarms();
-  selectedTime = null;
-  timeDisplayBtn.textContent = "시간을 선택하세요";
-  alarmLabelInput.value = "";
-  selectedDays = [];
-  dayButtons.forEach((btn) => btn.classList.remove("selected"));
-  alarmSoundSelect.value = "beep";
+  resetAddForm();
+  addAlarmOverlay.classList.remove("show");
 });
 
 function toggleAlarm(id) {
@@ -419,7 +551,7 @@ function renderAlarms() {
     time.textContent = alarm.time;
     const days = document.createElement("span");
     days.className = "days";
-    days.textContent = formatDays(alarm.days);
+    days.textContent = formatRepeat(alarm);
     const label = document.createElement("span");
     label.className = "label";
     label.textContent = alarm.label || "";
@@ -456,6 +588,154 @@ function renderAlarms() {
 const WEATHER_URL =
   "https://api.openweathermap.org/data/2.5/weather?lat=37.5665&lon=126.978&appid=7aeb250b3e494925d6b0217fa62ea065&units=metric";
 
+const WEATHER_EMOJI = {
+  Clear: "☀️",
+  Clouds: "☁️",
+  Rain: "🌧️",
+  Drizzle: "🌦️",
+  Thunderstorm: "⛈️",
+  Snow: "❄️",
+  Mist: "🌫️",
+  Fog: "🌫️",
+  Haze: "🌫️",
+  Smoke: "🌫️",
+  Dust: "🌫️",
+  Sand: "🌫️",
+  Ash: "🌫️",
+  Squall: "🌬️",
+  Tornado: "🌪️",
+};
+
+function clearWeatherBg() {
+  weatherBg.className = "weather-bg";
+  weatherBg.innerHTML = "";
+}
+
+function renderRain(count, dropHeight) {
+  for (let i = 0; i < count; i++) {
+    const drop = document.createElement("div");
+    drop.className = "raindrop";
+    const duration = 0.5 + Math.random() * 0.5;
+    drop.style.left = Math.random() * 100 + "%";
+    drop.style.height = (dropHeight || 16) + "px";
+    drop.style.animationDuration = duration + "s";
+    drop.style.animationDelay = -Math.random() * duration + "s";
+    weatherBg.appendChild(drop);
+  }
+}
+
+function renderSnow(count) {
+  for (let i = 0; i < count; i++) {
+    const flake = document.createElement("div");
+    flake.className = "snowflake";
+    const duration = 4 + Math.random() * 4;
+    const size = 4 + Math.random() * 4;
+    flake.style.left = Math.random() * 100 + "%";
+    flake.style.width = size + "px";
+    flake.style.height = size + "px";
+    flake.style.animationDuration = duration + "s";
+    flake.style.animationDelay = -Math.random() * duration + "s";
+    weatherBg.appendChild(flake);
+  }
+}
+
+function renderClouds(count) {
+  for (let i = 0; i < count; i++) {
+    const cloud = document.createElement("div");
+    cloud.className = "cloud";
+    const duration = 40 + Math.random() * 30;
+    const scale = 0.7 + Math.random() * 0.8;
+    cloud.style.top = 5 + Math.random() * 30 + "%";
+    cloud.style.transform = `scale(${scale})`;
+    cloud.style.animationDuration = duration + "s";
+    cloud.style.animationDelay = -Math.random() * duration + "s";
+    weatherBg.appendChild(cloud);
+  }
+}
+
+function renderSun() {
+  const sun = document.createElement("div");
+  sun.className = "sun";
+  weatherBg.appendChild(sun);
+}
+
+function renderFog(count) {
+  for (let i = 0; i < count; i++) {
+    const band = document.createElement("div");
+    band.className = "fog-band";
+    band.style.top = 10 + i * 22 + "%";
+    band.style.opacity = 0.5 + Math.random() * 0.4;
+    band.style.animationDuration = 10 + Math.random() * 6 + "s";
+    weatherBg.appendChild(band);
+  }
+}
+
+function renderThunderFlash(delay) {
+  const flash = document.createElement("div");
+  flash.className = "thunder-flash";
+  flash.style.animationDelay = delay + "s";
+  weatherBg.appendChild(flash);
+}
+
+function renderLightning(count, delay) {
+  for (let i = 0; i < count; i++) {
+    const bolt = document.createElement("div");
+    bolt.className = "lightning-bolt";
+    bolt.style.left = 15 + Math.random() * 60 + "%";
+    bolt.style.animationDelay = delay + "s";
+    weatherBg.appendChild(bolt);
+  }
+}
+
+function setWeatherBackground(condition) {
+  clearWeatherBg();
+  switch (condition) {
+    case "Clear":
+      weatherBg.classList.add("clear");
+      renderSun();
+      break;
+    case "Clouds":
+      weatherBg.classList.add("clouds");
+      renderClouds(4);
+      break;
+    case "Rain":
+      weatherBg.classList.add("rain");
+      renderClouds(2);
+      renderRain(60);
+      break;
+    case "Drizzle":
+      weatherBg.classList.add("drizzle");
+      renderClouds(2);
+      renderRain(30, 10);
+      break;
+    case "Thunderstorm": {
+      weatherBg.classList.add("thunderstorm");
+      renderRain(60);
+      const delay = -Math.random() * 6;
+      renderThunderFlash(delay);
+      renderLightning(1, delay);
+      break;
+    }
+    case "Snow":
+      weatherBg.classList.add("snow");
+      renderSnow(50);
+      break;
+    case "Mist":
+    case "Fog":
+    case "Haze":
+    case "Smoke":
+    case "Dust":
+    case "Sand":
+    case "Ash":
+      weatherBg.classList.add("mist");
+      renderFog(4);
+      break;
+    default:
+      weatherBg.classList.add("clouds");
+      renderClouds(2);
+  }
+}
+
 async function loadWeather() {
   try {
     const res = await fetch(WEATHER_URL);
@@ -463,14 +743,29 @@ async function loadWeather() {
     const data = await res.json();
     const celsius = data.main?.temp;
     if (typeof celsius !== "number") throw new Error("no temp field in response");
-    weatherEl.textContent = `서울 현재 기온: ${celsius.toFixed(1)}°C`;
+    const condition = data.weather?.[0]?.main;
+    const emoji = WEATHER_EMOJI[condition] || "🌡️";
+    weatherEl.textContent = `${emoji} 서울 ${celsius.toFixed(1)}°C`;
+    setWeatherBackground(condition);
   } catch (err) {
     weatherEl.textContent = "기온 정보를 불러올 수 없습니다.";
     console.error(err);
   }
 }
 
+weatherPreviewSelect.addEventListener("change", () => {
+  const condition = weatherPreviewSelect.value;
+  if (!condition) {
+    loadWeather();
+    return;
+  }
+  const emoji = WEATHER_EMOJI[condition] || "🌡️";
+  weatherEl.textContent = `${emoji} 미리보기: ${weatherPreviewSelect.selectedOptions[0].textContent}`;
+  setWeatherBackground(condition);
+});
+
 setInterval(updateClock, 1000);
 updateClock();
+resetAddForm();
 renderAlarms();
 loadWeather();

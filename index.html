@@ -7,7 +7,21 @@
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="weather-bg" id="weatherBg"></div>
+
   <div class="app">
+    <div class="weather" id="weather">기온 불러오는 중...</div>
+    <select id="weatherPreviewSelect" class="weather-preview-select">
+      <option value="">🔍 날씨 배경 미리보기</option>
+      <option value="Clear">☀️ 맑음</option>
+      <option value="Clouds">☁️ 구름</option>
+      <option value="Rain">🌧️ 비</option>
+      <option value="Drizzle">🌦️ 이슬비</option>
+      <option value="Thunderstorm">⛈️ 뇌우</option>
+      <option value="Snow">❄️ 눈</option>
+      <option value="Mist">🌫️ 안개</option>
+    </select>
+
     <div class="hero-clock">
       <img src="images/알람시계_re.png" alt="알람 시계" class="hero-image" />
       <div class="hand-pivot">
@@ -20,42 +34,72 @@
 
     <div class="clock" id="clock">00:00:00</div>
 
-    <div class="add-alarm">
-      <div class="field-group">
-        <span class="field-label">⏰ 시간</span>
-        <button type="button" class="time-display" id="timeDisplayBtn">시간을 선택하세요</button>
-      </div>
-
-      <div class="field-group">
-        <span class="field-label">📅 반복 요일</span>
-        <div class="day-picker" id="dayPicker">
-          <button type="button" class="day-btn" data-day="0">일</button>
-          <button type="button" class="day-btn" data-day="1">월</button>
-          <button type="button" class="day-btn" data-day="2">화</button>
-          <button type="button" class="day-btn" data-day="3">수</button>
-          <button type="button" class="day-btn" data-day="4">목</button>
-          <button type="button" class="day-btn" data-day="5">금</button>
-          <button type="button" class="day-btn" data-day="6">토</button>
-        </div>
-      </div>
-
-      <input type="text" id="alarmLabel" placeholder="✏️ 알람 이름 (선택)" />
-
-      <div class="field-group">
-        <span class="field-label">🔔 알람음</span>
-        <select id="alarmSound">
-          <option value="beep">삐삐 (기본)</option>
-          <option value="chime">차임벨</option>
-          <option value="digital">디지털음</option>
-        </select>
-      </div>
-
-      <button id="addBtn">+ 알람 추가</button>
+    <div class="list-header">
+      <span class="list-title">알람 목록</span>
+      <button type="button" class="fab-add" id="openAddBtn">+</button>
     </div>
 
     <ul class="alarm-list" id="alarmList"></ul>
+  </div>
 
-    <div class="weather" id="weather">기온 불러오는 중...</div>
+  <div class="add-alarm-overlay" id="addAlarmOverlay">
+    <div class="add-alarm-box">
+      <div class="add-alarm">
+        <div class="field-group">
+          <span class="field-label">⏰ 시간</span>
+          <button type="button" class="time-display" id="timeDisplayBtn">시간을 선택하세요</button>
+        </div>
+
+        <div class="field-group">
+          <span class="field-label">🔁 반복</span>
+          <select id="repeatType">
+            <option value="once">한 번만</option>
+            <option value="daily" selected>매일</option>
+            <option value="weekdays">월-금 (평일)</option>
+            <option value="interval">주기 반복 (N일마다)</option>
+            <option value="custom">사용자 지정 (요일 선택)</option>
+          </select>
+        </div>
+
+        <div class="field-group" id="customDaysGroup" hidden>
+          <span class="field-label">📅 요일 선택</span>
+          <div class="day-picker" id="dayPicker">
+            <button type="button" class="day-btn" data-day="0">일</button>
+            <button type="button" class="day-btn" data-day="1">월</button>
+            <button type="button" class="day-btn" data-day="2">화</button>
+            <button type="button" class="day-btn" data-day="3">수</button>
+            <button type="button" class="day-btn" data-day="4">목</button>
+            <button type="button" class="day-btn" data-day="5">금</button>
+            <button type="button" class="day-btn" data-day="6">토</button>
+          </div>
+        </div>
+
+        <div class="field-group" id="intervalGroup" hidden>
+          <span class="field-label">🔁 주기 설정</span>
+          <div class="interval-row">
+            <input type="date" id="intervalStartDate" />
+            <input type="number" id="intervalDays" min="1" max="365" value="2" />
+            <span>일마다</span>
+          </div>
+        </div>
+
+        <input type="text" id="alarmLabel" placeholder="✏️ 알람 이름 (선택)" />
+
+        <div class="field-group">
+          <span class="field-label">🔔 알람음</span>
+          <select id="alarmSound">
+            <option value="beep">삐삐 (기본)</option>
+            <option value="chime">차임벨</option>
+            <option value="digital">디지털음</option>
+          </select>
+        </div>
+
+        <div class="add-alarm-actions">
+          <button type="button" id="cancelAddBtn" class="cancel-add-btn">취소</button>
+          <button id="addBtn">알람 추가</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="time-picker-overlay" id="timePickerOverlay">

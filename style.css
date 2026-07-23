@@ -9,11 +9,234 @@ body {
   align-items: center;
   justify-content: center;
   font-family: "Segoe UI", "Malgun Gothic", sans-serif;
-  background-image: url("images/wall-texture.jpg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  background: #eef2f5;
   color: #3d3a36;
+  overflow-x: hidden;
+}
+
+.weather-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: linear-gradient(160deg, #cfd9e0 0%, #eef2f5 100%);
+  transition: background 0.8s ease;
+}
+
+.weather-bg.clear {
+  background: linear-gradient(160deg, #a9ddff 0%, #ffe9b3 100%);
+}
+
+.weather-bg.clouds {
+  background: linear-gradient(160deg, #cfd9e0 0%, #eef2f5 100%);
+}
+
+.weather-bg.rain {
+  background: linear-gradient(160deg, #6b7c8c 0%, #3f4c58 100%);
+}
+
+.weather-bg.drizzle {
+  background: linear-gradient(160deg, #9db3c2 0%, #c7d5de 100%);
+}
+
+.weather-bg.thunderstorm {
+  background: linear-gradient(160deg, #2b2f3a 0%, #454b5c 100%);
+}
+
+.weather-bg.snow {
+  background: linear-gradient(160deg, #46586c 0%, #232e3b 100%);
+}
+
+.weather-bg.mist {
+  background: linear-gradient(160deg, #8b95a0 0%, #5d6670 100%);
+}
+
+.sun {
+  position: absolute;
+  top: 8%;
+  right: 12%;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3c4 0%, #ffd76a 70%);
+  animation: pulse-sun 3s ease-in-out infinite;
+}
+
+.cloud {
+  position: absolute;
+  left: -180px;
+  width: 140px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  filter: blur(1px);
+  animation-name: drift-cloud;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.cloud::before,
+.cloud::after {
+  content: "";
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+.cloud::before {
+  width: 60px;
+  height: 60px;
+  top: -25px;
+  left: 15px;
+}
+
+.cloud::after {
+  width: 80px;
+  height: 70px;
+  top: -35px;
+  left: 60px;
+}
+
+.raindrop {
+  position: absolute;
+  top: -10vh;
+  width: 2px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 2px;
+  animation-name: fall-rain;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.snowflake {
+  position: absolute;
+  top: -10vh;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.95;
+  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.6);
+  animation-name: fall-snow;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.fog-band {
+  position: absolute;
+  left: -25%;
+  width: 150%;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.55);
+  filter: blur(10px);
+  animation-name: drift-fog;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.thunder-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: flash-thunder 6s infinite;
+}
+
+.lightning-bolt {
+  position: absolute;
+  top: 0;
+  width: 60px;
+  height: 55%;
+  background: linear-gradient(180deg, #fff8d6 0%, rgba(255, 248, 214, 0) 100%);
+  clip-path: polygon(55% 0%, 30% 42%, 48% 42%, 20% 100%, 42% 50%, 26% 50%, 55% 0%);
+  opacity: 0;
+  animation: flash-bolt 6s infinite;
+}
+
+@keyframes flash-bolt {
+  0%,
+  93%,
+  100% {
+    opacity: 0;
+  }
+  94% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.2;
+  }
+  96% {
+    opacity: 0.9;
+  }
+  98% {
+    opacity: 0;
+  }
+}
+
+@keyframes fall-rain {
+  to {
+    transform: translateY(120vh);
+  }
+}
+
+@keyframes fall-snow {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(20px, 60vh) rotate(180deg);
+  }
+  100% {
+    transform: translate(-15px, 120vh) rotate(360deg);
+  }
+}
+
+@keyframes drift-cloud {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100vw + 200px));
+  }
+}
+
+@keyframes pulse-sun {
+  0%,
+  100% {
+    box-shadow: 0 0 50px 15px rgba(255, 214, 110, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 80px 30px rgba(255, 214, 110, 0.85);
+  }
+}
+
+@keyframes drift-fog {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(8%);
+  }
+}
+
+@keyframes flash-thunder {
+  0%,
+  93%,
+  100% {
+    opacity: 0;
+  }
+  94% {
+    opacity: 0.85;
+  }
+  95% {
+    opacity: 0.05;
+  }
+  97% {
+    opacity: 0.6;
+  }
+  98% {
+    opacity: 0;
+  }
 }
 
 .app {
@@ -105,11 +328,89 @@ h1 {
   padding: 12px 0;
 }
 
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.list-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #3d3a36;
+}
+
+.fab-add {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #8ec3e0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.fab-add:hover {
+  background: #79b0d4;
+}
+
+.add-alarm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(74, 64, 56, 0.45);
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  padding: 20px;
+}
+
+.add-alarm-overlay.show {
+  display: flex;
+}
+
+.add-alarm-box {
+  width: 340px;
+  max-width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #fbfbf9;
+  padding: 24px 20px;
+  border-radius: 28px;
+}
+
 .add-alarm {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 22px;
+}
+
+.add-alarm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.add-alarm-actions #addBtn {
+  flex: 1;
+}
+
+.cancel-add-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  background: #eef4f8;
+  color: #8a94a0;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .add-alarm input {
@@ -130,6 +431,10 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.field-group[hidden] {
+  display: none;
 }
 
 .field-label {
@@ -177,6 +482,37 @@ h1 {
   background: #eef4f8;
   color: #3d3a36;
   cursor: pointer;
+}
+
+.interval-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8a94a0;
+}
+
+.interval-row input[type="date"] {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  background: #eef4f8;
+  color: #3d3a36;
+}
+
+.interval-row input[type="number"] {
+  width: 56px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  text-align: center;
+  background: #eef4f8;
+  color: #3d3a36;
 }
 
 .time-display {
@@ -320,7 +656,20 @@ h1 {
   text-align: center;
   color: #8a94a0;
   font-size: 13px;
-  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+.weather-preview-select {
+  display: block;
+  margin: 0 auto 12px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  background: #eef4f8;
+  color: #8a94a0;
+  font-size: 11px;
+  cursor: pointer;
 }
 
 .ringing-overlay {
