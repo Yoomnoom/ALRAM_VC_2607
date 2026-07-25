@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>알람 앱</title>
 <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="news/news.css" />
 </head>
 <body>
   <div class="weather-bg" id="weatherBg"></div>
 
+  <div class="layout">
   <div class="app">
     <div class="weather" id="weather">기온 불러오는 중...</div>
     <select id="weatherPreviewSelect" class="weather-preview-select">
@@ -40,6 +42,26 @@
     </div>
 
     <ul class="alarm-list" id="alarmList"></ul>
+
+    <div class="save-alarms-row">
+      <button type="button" class="news-btn" id="openNewsBtn">📰 최근뉴스</button>
+    </div>
+  </div>
+
+  <div class="news-panel" id="newsOverlay">
+    <div class="news-box">
+      <div class="news-box-header">
+        <div class="news-box-header-left">
+          <span class="news-box-title">최근뉴스</span>
+          <button type="button" class="save-alarms-btn" id="saveAlarmsBtn">💾 지금 저장</button>
+          <span class="save-alarms-status" id="saveAlarmsStatus"></span>
+        </div>
+        <button type="button" class="news-close-btn" id="closeNewsBtn">✕</button>
+      </div>
+      <span class="news-refreshed-at" id="newsRefreshedAt"></span>
+      <div class="news-list" id="newsTable"></div>
+    </div>
+  </div>
   </div>
 
   <div class="add-alarm-overlay" id="addAlarmOverlay">
@@ -150,6 +172,7 @@
     <div class="ringing-box">
       <p class="ringing-label" id="ringingLabel">알람</p>
       <p class="ringing-time" id="ringingTime">00:00</p>
+      <div class="briefing-list" id="newsBriefingList"></div>
       <div class="snooze-picker" id="snoozePicker">
         <button type="button" class="snooze-min-btn" data-min="5">5분</button>
         <button type="button" class="snooze-min-btn" data-min="10">10분</button>
@@ -162,6 +185,8 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script src="script.js"></script>
+  <script src="news/news.js"></script>
 </body>
 </html>

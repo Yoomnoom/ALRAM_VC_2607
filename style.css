@@ -7,11 +7,12 @@ body {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-family: "Segoe UI", "Malgun Gothic", sans-serif;
   background: #eef2f5;
   color: #3d3a36;
   overflow-x: hidden;
+  padding-left: 40px;
 }
 
 .weather-bg {
@@ -562,20 +563,35 @@ h1 {
 .alarm-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   padding: 14px 16px;
   background: #eef4f8;
   border-radius: 18px;
+  cursor: pointer;
 }
 
 .alarm-item.disabled {
   opacity: 0.5;
 }
 
+.alarm-select {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: #5f97bd;
+}
+
 .alarm-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.alarm-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .alarm-info .time {
@@ -603,6 +619,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
 }
 
 .toggle-btn {
@@ -687,6 +704,9 @@ h1 {
 }
 
 .ringing-box {
+  width: min(576px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
   text-align: center;
   background: #fbfbf9;
   padding: 40px 32px;
@@ -939,6 +959,35 @@ h1 {
 
 .picker-cancel {
   background: #eef4f8;
+  color: #8a94a0;
+}
+
+.save-alarms-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.save-alarms-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 14px;
+  background: #eef4f8;
+  color: #5f97bd;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.save-alarms-btn:hover {
+  background: #e0ebf2;
+}
+
+.save-alarms-status {
+  font-size: 12px;
   color: #8a94a0;
 }
 

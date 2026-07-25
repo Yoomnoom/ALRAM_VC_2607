@@ -27,6 +27,8 @@ const customDaysGroup = document.getElementById("customDaysGroup");
 const intervalGroup = document.getElementById("intervalGroup");
 const intervalStartDate = document.getElementById("intervalStartDate");
 const intervalDaysInput = document.getElementById("intervalDays");
+const saveAlarmsBtn = document.getElementById("saveAlarmsBtn");
+const saveAlarmsStatus = document.getElementById("saveAlarmsStatus");
 
 const timePickerOverlay = document.getElementById("timePickerOverlay");
 const hourInput = document.getElementById("hourInput");
@@ -50,9 +52,14 @@ let ringingAlarm = null;
 let beepInterval = null;
 let audioCtx = null;
 let selectedDays = [];
-let snoozeTimeoutId = null;
 let vibrateIntervalId = null;
 let selectedSnoozeMinutes = 5;
+let briefingItems = null;
+let briefingIndex = 0;
+let briefingCycleTimeoutId = null;
+const selectedAlarmIds = new Set();
+const BEEP_BEFORE_BRIEFING_MS = 4000;
+let editingAlarmId = null;
 
 let selectedTime = null;
 let pickHour = 7;
@@ -300,7 +307,22 @@ function updateClock() {
   const now = new Date();
   clockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   updateHands(now);
+  checkSnoozes(now);
   checkAlarms(now);
+}
+
+function checkSnoozes(now) {
+  if (ringingAlarmId !== null) return;
+  const nowMs = now.getTime();
+
+  for (const alarm of alarms) {
+    if (alarm.snoozeUntil && nowMs >= alarm.snoozeUntil) {
+      delete alarm.snoozeUntil;
+      saveAlarms();
+      triggerAlarm(alarm);
+      break;
+    }
+  }
 }
 
 function updateHands(now) {
@@ -330,9 +352,6 @@ function checkAlarms(now) {
       alarm.lastTriggered !== hhmm + "_" + now.toDateString()
     ) {
       alarm.lastTriggered = hhmm + "_" + now.toDateString();
-      if (getRepeat(alarm).type === "once") {
-        alarm.enabled = false;
-      }
       saveAlarms();
       renderAlarms();
       triggerAlarm(alarm);
@@ -349,6 +368,48 @@ function triggerAlarm(alarm) {
   ringingOverlay.classList.add("show");
   startBeep(alarm);
   startVibrate();
+  loadAlarmNewsBriefing();
+}
+
+async function loadAlarmNewsBriefing() {
+  try {
+    const [startupData, webtoonData] = await Promise.all([
+      fetchRecentNews("스타트업", 5),
+      fetchRecentNews("웹툰", 5),
+    ]);
+
+    const merged = [...((startupData && startupData.items) || []), ...((webtoonData && webtoonData.items) || [])].sort(
+      (a, b) => new Date(b.pubDate) - new Date(a.pubDate)
+    );
+
+    if (merged.length === 0 || ringingAlarmId === null) return;
+
+    ringingAlarm.lastNewsContent = buildBriefingText(merged);
+    briefingItems = merged;
+    briefingIndex = 0;
+    renderNewsBriefing(briefingItems);
+    logBriefingToSheet(briefingItems, ringingAlarm.time);
+    scheduleNewsBriefing();
+  } catch (err) {
+    console.error("뉴스 브리핑을 불러오지 못했습니다:", err);
+  }
+}
+
+function scheduleNewsBriefing() {
+  if (ringingAlarmId === null || !briefingItems || briefingItems.length === 0) return;
+
+  briefingCycleTimeoutId = setTimeout(() => {
+    stopBeep();
+    const index = briefingIndex % briefingItems.length;
+    const item = briefingItems[index];
+    const itemText = buildBriefingItemText(item, index);
+    speakBriefing(itemText, () => {
+      if (ringingAlarmId === null) return;
+      briefingIndex++;
+      startBeep(ringingAlarm);
+      scheduleNewsBriefing();
+    });
+  }, BEEP_BEFORE_BRIEFING_MS);
 }
 
 function startBeep(alarm) {
@@ -418,12 +479,21 @@ function stopVibrate() {
 function closeRinging() {
   stopBeep();
   stopVibrate();
+  stopBriefing();
+  clearTimeout(briefingCycleTimeoutId);
+  briefingCycleTimeoutId = null;
+  briefingItems = null;
+  briefingIndex = 0;
+  renderNewsBriefing([]);
   ringingOverlay.classList.remove("show");
   ringingAlarmId = null;
   ringingAlarm = null;
 }
 
 stopBtn.addEventListener("click", () => {
+  if (ringingAlarm && getRepeat(ringingAlarm).type === "once") {
+    deleteAlarm(ringingAlarm.id);
+  }
   closeRinging();
 });
 
@@ -432,13 +502,14 @@ snoozeBtn.addEventListener("click", () => {
   const minutes = selectedSnoozeMinutes;
   closeRinging();
   if (alarm) {
-    snoozeTimeoutId = setTimeout(() => {
-      triggerAlarm(alarm);
-    }, minutes * 60 * 1000);
+    alarm.snoozeUntil = Date.now() + minutes * 60 * 1000;
+    saveAlarms();
   }
 });
 
 function resetAddForm() {
+  editingAlarmId = null;
+  addBtn.textContent = "알람 추가";
   selectedTime = null;
   timeDisplayBtn.textContent = "시간을 선택하세요";
   alarmLabelInput.value = "";
@@ -452,6 +523,31 @@ function resetAddForm() {
   intervalDaysInput.value = 2;
 }
 
+function openEditAlarm(alarm) {
+  editingAlarmId = alarm.id;
+  addBtn.textContent = "수정 완료";
+
+  selectedTime = alarm.time;
+  timeDisplayBtn.textContent = formatTimeDisplay(alarm.time);
+  alarmLabelInput.value = alarm.label || "";
+  alarmSoundSelect.value = alarm.sound || "beep";
+
+  const repeat = getRepeat(alarm);
+  repeatTypeSelect.value = repeat.type;
+  customDaysGroup.hidden = repeat.type !== "custom";
+  intervalGroup.hidden = repeat.type !== "interval";
+
+  selectedDays = repeat.type === "custom" ? [...(repeat.days || [])] : [];
+  dayButtons.forEach((btn) => {
+    btn.classList.toggle("selected", selectedDays.includes(Number(btn.dataset.day)));
+  });
+
+  intervalStartDate.value = repeat.type === "interval" ? repeat.startDate || todayISO() : todayISO();
+  intervalDaysInput.value = repeat.type === "interval" ? repeat.intervalDays || 2 : 2;
+
+  addAlarmOverlay.classList.add("show");
+}
+
 repeatTypeSelect.addEventListener("change", () => {
   const v = repeatTypeSelect.value;
   customDaysGroup.hidden = v !== "custom";
@@ -462,6 +558,7 @@ repeatTypeSelect.addEventListener("change", () => {
 });
 
 openAddBtn.addEventListener("click", () => {
+  resetAddForm();
   addAlarmOverlay.classList.add("show");
 });
 
@@ -498,21 +595,86 @@ addBtn.addEventListener("click", () => {
     repeat = { type: repeatValue };
   }
 
-  alarms.push({
-    id: Date.now(),
-    time: selectedTime,
-    label: alarmLabelInput.value.trim(),
-    repeat,
-    sound: alarmSoundSelect.value,
-    enabled: true,
-    lastTriggered: null,
-  });
+  if (editingAlarmId !== null) {
+    const target = alarms.find((a) => a.id === editingAlarmId);
+    if (target) {
+      target.time = selectedTime;
+      target.label = alarmLabelInput.value.trim();
+      target.repeat = repeat;
+      target.sound = alarmSoundSelect.value;
+    }
+  } else {
+    alarms.push({
+      id: Date.now(),
+      time: selectedTime,
+      label: alarmLabelInput.value.trim(),
+      repeat,
+      sound: alarmSoundSelect.value,
+      enabled: true,
+      lastTriggered: null,
+    });
+  }
   alarms.sort((a, b) => a.time.localeCompare(b.time));
   saveAlarms();
   renderAlarms();
   resetAddForm();
   addAlarmOverlay.classList.remove("show");
 });
+
+function buildAlarmSaveRow(alarm) {
+  return {
+    id: alarm.id,
+    label: alarm.label,
+    time: alarm.time,
+    isActive: alarm.enabled,
+    lastTriggeredDate: alarm.lastTriggered,
+    content: alarm.lastNewsContent || "",
+  };
+}
+
+if (saveAlarmsBtn && saveAlarmsStatus) {
+  saveAlarmsBtn.addEventListener("click", async () => {
+    const isPartialSave = selectedAlarmIds.size > 0;
+    const targetAlarms = isPartialSave ? alarms.filter((a) => selectedAlarmIds.has(a.id)) : alarms;
+
+    saveAlarmsStatus.textContent = "저장 중...";
+
+    let alarmsSaved = null; // null = 저장할 알람이 없어서 건너뜀
+    if (targetAlarms.length > 0) {
+      try {
+        const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ alarms: targetAlarms.map(buildAlarmSaveRow) }),
+        });
+        const data = await response.json();
+        alarmsSaved = Boolean(data && data.result === "success");
+      } catch (err) {
+        console.error("알람 저장 실패:", err);
+        alarmsSaved = false;
+      }
+    }
+
+    const newsSaved = await logSelectedNewsToSheet();
+
+    if (alarmsSaved === null && newsSaved === null) {
+      saveAlarmsStatus.textContent = "저장할 항목이 없습니다";
+      return;
+    }
+
+    const scopeLabel = isPartialSave ? `선택한 ${targetAlarms.length}개` : "전체";
+    const parts = [];
+    if (alarmsSaved === true) parts.push(`알람(${scopeLabel}) 저장됨`);
+    else if (alarmsSaved === false) parts.push("알람 저장 실패");
+
+    if (newsSaved === true) parts.push("뉴스 저장됨");
+    else if (newsSaved === false) parts.push("뉴스 저장 실패");
+
+    const now = new Date();
+    const timeLabel = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    saveAlarmsStatus.textContent = `${parts.join(", ")} (${timeLabel})`;
+  });
+}
 
 function toggleAlarm(id) {
   const alarm = alarms.find((a) => a.id === id);
@@ -525,6 +687,7 @@ function toggleAlarm(id) {
 
 function deleteAlarm(id) {
   alarms = alarms.filter((a) => a.id !== id);
+  selectedAlarmIds.delete(id);
   saveAlarms();
   renderAlarms();
 }
@@ -544,24 +707,41 @@ function renderAlarms() {
     const li = document.createElement("li");
     li.className = "alarm-item" + (alarm.enabled ? "" : " disabled");
 
+    const selectCheckbox = document.createElement("input");
+    selectCheckbox.type = "checkbox";
+    selectCheckbox.className = "alarm-select";
+    selectCheckbox.checked = selectedAlarmIds.has(alarm.id);
+    selectCheckbox.addEventListener("click", (e) => e.stopPropagation());
+    selectCheckbox.addEventListener("change", () => {
+      if (selectCheckbox.checked) selectedAlarmIds.add(alarm.id);
+      else selectedAlarmIds.delete(alarm.id);
+    });
+
     const info = document.createElement("div");
     info.className = "alarm-info";
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "alarm-title-row";
     const time = document.createElement("span");
     time.className = "time";
     time.textContent = alarm.time;
+    titleRow.appendChild(time);
+    if (alarm.label) {
+      const label = document.createElement("span");
+      label.className = "label";
+      label.textContent = alarm.label;
+      titleRow.appendChild(label);
+    }
+
     const days = document.createElement("span");
     days.className = "days";
     days.textContent = formatRepeat(alarm);
-    const label = document.createElement("span");
-    label.className = "label";
-    label.textContent = alarm.label || "";
     const meta = document.createElement("span");
     meta.className = "meta";
     const soundName = SOUND_NAMES[alarm.sound] || SOUND_NAMES.beep;
     meta.textContent = `🔔 ${soundName}`;
-    info.appendChild(time);
+    info.appendChild(titleRow);
     info.appendChild(days);
-    if (alarm.label) info.appendChild(label);
     info.appendChild(meta);
 
     const actions = document.createElement("div");
@@ -569,16 +749,24 @@ function renderAlarms() {
 
     const toggleBtn = document.createElement("button");
     toggleBtn.className = "toggle-btn" + (alarm.enabled ? " on" : "");
-    toggleBtn.addEventListener("click", () => toggleAlarm(alarm.id));
+    toggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleAlarm(alarm.id);
+    });
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
     deleteBtn.textContent = "✕";
-    deleteBtn.addEventListener("click", () => deleteAlarm(alarm.id));
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deleteAlarm(alarm.id);
+    });
 
     actions.appendChild(toggleBtn);
     actions.appendChild(deleteBtn);
 
+    li.addEventListener("click", () => openEditAlarm(alarm));
+    li.appendChild(selectCheckbox);
     li.appendChild(info);
     li.appendChild(actions);
     alarmListEl.appendChild(li);
