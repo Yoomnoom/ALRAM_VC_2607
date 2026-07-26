@@ -1,4 +1,15 @@
 const NEWS_TIMEOUT_MS = 5000;
+const NEWS_KEYWORDS_KEY = "newsKeywords";
+const DEFAULT_NEWS_KEYWORDS = ["스타트업", "웹툰"];
+
+function buildNewsKeywords() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(NEWS_KEYWORDS_KEY));
+    return Array.isArray(stored) ? stored : DEFAULT_NEWS_KEYWORDS;
+  } catch {
+    return DEFAULT_NEWS_KEYWORDS;
+  }
+}
 
 async function fetchRecentNews(keyword, count = 5) {
   const controller = new AbortController();
@@ -125,9 +136,7 @@ function renderNewsStatus(message, { showRetry = false, onRetry } = {}) {
   }
 }
 
-const NEWS_SECTION_LABELS = { startup: "🚀 스타트업", webtoon: "🌐 웹툰" };
-
-function buildNewsSectionEl(category, items, newLinks) {
+function buildNewsSectionEl(category, items, newLinks, onRemove) {
   const section = document.createElement("div");
   section.className = "news-section";
 
@@ -136,8 +145,11 @@ function buildNewsSectionEl(category, items, newLinks) {
 
   const heading = document.createElement("p");
   heading.className = "news-section-title";
-  heading.textContent = NEWS_SECTION_LABELS[category] || category;
+  heading.textContent = `📌 ${category}`;
   headingRow.appendChild(heading);
+
+  const headingRight = document.createElement("div");
+  headingRight.className = "news-section-heading-right";
 
   const selectAllLabel = document.createElement("label");
   selectAllLabel.className = "news-section-select-all";
@@ -156,8 +168,19 @@ function buildNewsSectionEl(category, items, newLinks) {
 
   selectAllLabel.appendChild(selectAllCheckbox);
   selectAllLabel.appendChild(document.createTextNode("전체"));
-  headingRow.appendChild(selectAllLabel);
+  headingRight.appendChild(selectAllLabel);
 
+  if (onRemove) {
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "news-keyword-remove-btn";
+    removeBtn.title = "지정 해제";
+    removeBtn.textContent = "✕";
+    removeBtn.addEventListener("click", onRemove);
+    headingRight.appendChild(removeBtn);
+  }
+
+  headingRow.appendChild(headingRight);
   section.appendChild(headingRow);
 
   items.forEach((item) => section.appendChild(buildNewsCardEl(item, newLinks.has(item.link), category)));
@@ -170,14 +193,39 @@ function renderNewsList(newsData, newLinks = new Set()) {
 
   listEl.querySelectorAll(".news-section, .news-status, .news-retry-btn").forEach((el) => el.remove());
 
-  listEl.appendChild(buildNewsSectionEl("startup", (newsData && newsData.startup) || [], newLinks));
-  listEl.appendChild(buildNewsSectionEl("webtoon", (newsData && newsData.webtoon) || [], newLinks));
+  const keywords = buildNewsKeywords();
+
+  if (keywords.length === 0) {
+    renderNewsStatus("지정된 키워드가 없습니다. 위 검색창에서 관심 키워드를 검색하고 지정해보세요.");
+    updateGlobalSelectAllState(newsData);
+    return;
+  }
+
+  keywords.forEach((keyword) => {
+    const items = (newsData && newsData[keyword]) || [];
+    listEl.appendChild(
+      buildNewsSectionEl(keyword, items, newLinks, () => {
+        const remaining = buildNewsKeywords().filter((k) => k !== keyword);
+        localStorage.setItem(NEWS_KEYWORDS_KEY, JSON.stringify(remaining));
+        if (newsCache) {
+          delete newsCache[keyword];
+          localStorage.setItem(
+            NEWS_CACHE_KEY,
+            JSON.stringify({ date: new Date().toDateString(), data: newsCache })
+          );
+        }
+        renderNewsList(newsCache);
+      })
+    );
+  });
 
   updateGlobalSelectAllState(newsData);
 }
 
 function updateSectionSelectAllState(category) {
-  const checkbox = document.querySelector(`.news-section-select-all input[data-category="${category}"]`);
+  const checkbox = Array.from(document.querySelectorAll(".news-section-select-all input")).find(
+    (el) => el.dataset.category === category
+  );
   if (!checkbox || !newsCache) return;
 
   const items = newsCache[category] || [];
@@ -197,8 +245,8 @@ function updateGlobalSelectAllState(newsData) {
   if (!checkbox) return;
 
   const allLinks = [];
-  ["startup", "webtoon"].forEach((category) => {
-    ((newsData && newsData[category]) || []).forEach((item) => allLinks.push(item.link));
+  Object.keys(newsData || {}).forEach((category) => {
+    (newsData[category] || []).forEach((item) => allLinks.push(item.link));
   });
 
   if (allLinks.length === 0) {
@@ -214,15 +262,15 @@ function updateGlobalSelectAllState(newsData) {
 
 function buildNewLinkSet(previousData, freshData) {
   const previousLinks = new Set();
-  ["startup", "webtoon"].forEach((category) => {
-    ((previousData && previousData[category]) || []).forEach((item) => previousLinks.add(item.link));
+  Object.keys(previousData || {}).forEach((category) => {
+    (previousData[category] || []).forEach((item) => previousLinks.add(item.link));
   });
 
   const newLinks = new Set();
   if (!previousData) return newLinks;
 
-  ["startup", "webtoon"].forEach((category) => {
-    ((freshData && freshData[category]) || []).forEach((item) => {
+  Object.keys(freshData || {}).forEach((category) => {
+    (freshData[category] || []).forEach((item) => {
       if (!previousLinks.has(item.link)) newLinks.add(item.link);
     });
   });
@@ -254,8 +302,8 @@ const selectedNewsLinks = new Set();
 if (newsSelectAllCheckbox) {
   newsSelectAllCheckbox.addEventListener("change", () => {
     const allLinks = [];
-    ["startup", "webtoon"].forEach((category) => {
-      ((newsCache && newsCache[category]) || []).forEach((item) => allLinks.push(item.link));
+    Object.keys(newsCache || {}).forEach((category) => {
+      (newsCache[category] || []).forEach((item) => allLinks.push(item.link));
     });
 
     if (newsSelectAllCheckbox.checked) {
@@ -284,6 +332,16 @@ async function fetchNews() {
     }
   }
 
+  const keywords = buildNewsKeywords();
+
+  if (keywords.length === 0) {
+    newsCache = {};
+    renderNewsList(newsCache);
+    const refreshedEl = document.getElementById("newsRefreshedAt");
+    if (refreshedEl) refreshedEl.textContent = "";
+    return;
+  }
+
   if (!newsCache) {
     renderNewsStatus("불러오는 중...");
   } else {
@@ -291,20 +349,18 @@ async function fetchNews() {
   }
 
   try {
-    const [startupData, webtoonData] = await Promise.all([
-      fetchRecentNews("스타트업", 5),
-      fetchRecentNews("웹툰", 5),
-    ]);
+    const results = await Promise.all(keywords.map((keyword) => fetchRecentNews(keyword, 5)));
 
-    const startup = (startupData && startupData.items) || [];
-    const webtoon = (webtoonData && webtoonData.items) || [];
+    const freshData = {};
+    keywords.forEach((keyword, i) => {
+      freshData[keyword] = (results[i] && results[i].items) || [];
+    });
 
-    if (startup.length === 0 && webtoon.length === 0) {
+    if (Object.values(freshData).every((items) => items.length === 0)) {
       if (!newsCache) renderNewsStatus("표시할 뉴스가 없습니다");
       return;
     }
 
-    const freshData = { startup, webtoon };
     const newLinks = buildNewLinkSet(previousData, freshData);
 
     newsCache = freshData;
@@ -338,6 +394,118 @@ if (openNewsBtn && newsOverlay) {
 if (closeNewsBtn && newsOverlay) {
   closeNewsBtn.addEventListener("click", () => {
     newsOverlay.classList.remove("show");
+  });
+}
+
+async function fetchAlarmBriefingNews() {
+  const keywords = buildNewsKeywords();
+  if (keywords.length === 0) return [];
+
+  const results = await Promise.all(keywords.map((keyword) => fetchRecentNews(keyword, 5)));
+  const merged = results.flatMap((data) => (data && data.items) || []);
+  return merged.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+}
+
+const newsSearchInput = document.getElementById("newsSearchInput");
+const newsSearchBtn = document.getElementById("newsSearchBtn");
+const newsSearchResultEl = document.getElementById("newsSearchResult");
+
+function buildNewsSearchResultEl(keyword, items) {
+  const wrap = document.createElement("div");
+  wrap.className = "news-section news-search-preview";
+
+  const headingRow = document.createElement("div");
+  headingRow.className = "news-section-heading-row";
+
+  const heading = document.createElement("p");
+  heading.className = "news-section-title";
+  heading.textContent = `🔍 "${keyword}" 검색 결과`;
+  headingRow.appendChild(heading);
+  wrap.appendChild(headingRow);
+
+  const keywords = buildNewsKeywords();
+
+  if (keywords.includes(keyword)) {
+    const info = document.createElement("p");
+    info.className = "news-search-info";
+    info.textContent = "이미 지정된 키워드입니다.";
+    wrap.appendChild(info);
+  } else {
+    const actionRow = document.createElement("div");
+    actionRow.className = "news-designate-row";
+
+    if (keywords.length < 2) {
+      const designateBtn = document.createElement("button");
+      designateBtn.type = "button";
+      designateBtn.className = "news-designate-btn";
+      designateBtn.textContent = "⭐ 이 키워드 지정하기";
+      designateBtn.addEventListener("click", () => {
+        localStorage.setItem(NEWS_KEYWORDS_KEY, JSON.stringify([...keywords, keyword]));
+        newsSearchResultEl.innerHTML = "";
+        newsSearchInput.value = "";
+        fetchNews();
+      });
+      actionRow.appendChild(designateBtn);
+    } else {
+      keywords.forEach((existing, i) => {
+        const replaceBtn = document.createElement("button");
+        replaceBtn.type = "button";
+        replaceBtn.className = "news-designate-btn";
+        replaceBtn.textContent = `'${existing}' 대신 지정`;
+        replaceBtn.addEventListener("click", () => {
+          const next = [...keywords];
+          next[i] = keyword;
+          localStorage.setItem(NEWS_KEYWORDS_KEY, JSON.stringify(next));
+          newsSearchResultEl.innerHTML = "";
+          newsSearchInput.value = "";
+          fetchNews();
+        });
+        actionRow.appendChild(replaceBtn);
+      });
+    }
+
+    wrap.appendChild(actionRow);
+  }
+
+  if (items.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "news-search-info";
+    empty.textContent = "검색 결과가 없습니다.";
+    wrap.appendChild(empty);
+  } else {
+    items.forEach((item) => wrap.appendChild(buildNewsCardEl(item, false, `search:${keyword}`)));
+  }
+
+  return wrap;
+}
+
+async function fetchNewsSearchResult() {
+  const keyword = newsSearchInput.value.trim();
+  if (!keyword) return;
+
+  newsSearchResultEl.innerHTML = "";
+  const loading = document.createElement("p");
+  loading.className = "news-search-info";
+  loading.textContent = "검색 중...";
+  newsSearchResultEl.appendChild(loading);
+
+  try {
+    const data = await fetchRecentNews(keyword, 5);
+    newsSearchResultEl.innerHTML = "";
+    newsSearchResultEl.appendChild(buildNewsSearchResultEl(keyword, (data && data.items) || []));
+  } catch {
+    newsSearchResultEl.innerHTML = "";
+    const errEl = document.createElement("p");
+    errEl.className = "news-search-info";
+    errEl.textContent = "검색에 실패했습니다.";
+    newsSearchResultEl.appendChild(errEl);
+  }
+}
+
+if (newsSearchBtn) newsSearchBtn.addEventListener("click", fetchNewsSearchResult);
+if (newsSearchInput) {
+  newsSearchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") fetchNewsSearchResult();
   });
 }
 
@@ -425,7 +593,7 @@ async function logSelectedNewsToSheet() {
   if (!newsCache || selectedNewsLinks.size === 0) return null;
 
   const selected = [];
-  ["startup", "webtoon"].forEach((category) => {
+  Object.keys(newsCache).forEach((category) => {
     (newsCache[category] || []).forEach((item) => {
       if (selectedNewsLinks.has(item.link)) {
         selected.push({

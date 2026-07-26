@@ -373,14 +373,7 @@ function triggerAlarm(alarm) {
 
 async function loadAlarmNewsBriefing() {
   try {
-    const [startupData, webtoonData] = await Promise.all([
-      fetchRecentNews("스타트업", 5),
-      fetchRecentNews("웹툰", 5),
-    ]);
-
-    const merged = [...((startupData && startupData.items) || []), ...((webtoonData && webtoonData.items) || [])].sort(
-      (a, b) => new Date(b.pubDate) - new Date(a.pubDate)
-    );
+    const merged = await fetchAlarmBriefingNews();
 
     if (merged.length === 0 || ringingAlarmId === null) return;
 
