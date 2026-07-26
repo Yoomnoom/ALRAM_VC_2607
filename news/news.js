@@ -48,10 +48,12 @@ function buildNewsCardEl(item, isNew, category) {
   checkbox.type = "checkbox";
   checkbox.className = "news-select";
   checkbox.checked = selectedNewsLinks.has(item.link);
+  checkbox.addEventListener("click", (e) => e.stopPropagation());
   checkbox.addEventListener("change", () => {
     if (checkbox.checked) selectedNewsLinks.add(item.link);
     else selectedNewsLinks.delete(item.link);
     updateSectionSelectAllState(category);
+    updateGlobalSelectAllState(newsCache);
   });
 
   const title = document.createElement("p");
@@ -85,6 +87,7 @@ function buildNewsCardEl(item, isNew, category) {
   link.target = "_blank";
   link.rel = "noopener noreferrer";
   link.textContent = "원문보기";
+  link.addEventListener("click", (e) => e.stopPropagation());
 
   meta.appendChild(date);
   meta.appendChild(link);
@@ -92,6 +95,12 @@ function buildNewsCardEl(item, isNew, category) {
   cell.appendChild(header);
   cell.appendChild(desc);
   cell.appendChild(meta);
+
+  cell.classList.add("news-card-clickable");
+  cell.addEventListener("click", () => {
+    window.open(item.link, "_blank", "noopener,noreferrer");
+  });
+
   return cell;
 }
 
@@ -146,7 +155,7 @@ function buildNewsSectionEl(category, items, newLinks) {
   });
 
   selectAllLabel.appendChild(selectAllCheckbox);
-  selectAllLabel.appendChild(document.createTextNode("전체 선택"));
+  selectAllLabel.appendChild(document.createTextNode("전체"));
   headingRow.appendChild(selectAllLabel);
 
   section.appendChild(headingRow);
@@ -163,6 +172,8 @@ function renderNewsList(newsData, newLinks = new Set()) {
 
   listEl.appendChild(buildNewsSectionEl("startup", (newsData && newsData.startup) || [], newLinks));
   listEl.appendChild(buildNewsSectionEl("webtoon", (newsData && newsData.webtoon) || [], newLinks));
+
+  updateGlobalSelectAllState(newsData);
 }
 
 function updateSectionSelectAllState(category) {
@@ -179,6 +190,26 @@ function updateSectionSelectAllState(category) {
   const selectedCount = items.filter((item) => selectedNewsLinks.has(item.link)).length;
   checkbox.checked = selectedCount === items.length;
   checkbox.indeterminate = selectedCount > 0 && selectedCount < items.length;
+}
+
+function updateGlobalSelectAllState(newsData) {
+  const checkbox = document.getElementById("newsSelectAllCheckbox");
+  if (!checkbox) return;
+
+  const allLinks = [];
+  ["startup", "webtoon"].forEach((category) => {
+    ((newsData && newsData[category]) || []).forEach((item) => allLinks.push(item.link));
+  });
+
+  if (allLinks.length === 0) {
+    checkbox.checked = false;
+    checkbox.indeterminate = false;
+    return;
+  }
+
+  const selectedCount = allLinks.filter((link) => selectedNewsLinks.has(link)).length;
+  checkbox.checked = selectedCount === allLinks.length;
+  checkbox.indeterminate = selectedCount > 0 && selectedCount < allLinks.length;
 }
 
 function buildNewLinkSet(previousData, freshData) {
@@ -214,10 +245,28 @@ function renderNewsRefreshedAt(date, failMessage) {
 const openNewsBtn = document.getElementById("openNewsBtn");
 const newsOverlay = document.getElementById("newsOverlay");
 const closeNewsBtn = document.getElementById("closeNewsBtn");
+const newsSelectAllCheckbox = document.getElementById("newsSelectAllCheckbox");
 
 const NEWS_CACHE_KEY = "newsCache";
 let newsCache = null;
 const selectedNewsLinks = new Set();
+
+if (newsSelectAllCheckbox) {
+  newsSelectAllCheckbox.addEventListener("change", () => {
+    const allLinks = [];
+    ["startup", "webtoon"].forEach((category) => {
+      ((newsCache && newsCache[category]) || []).forEach((item) => allLinks.push(item.link));
+    });
+
+    if (newsSelectAllCheckbox.checked) {
+      allLinks.forEach((link) => selectedNewsLinks.add(link));
+    } else {
+      selectedNewsLinks.clear();
+    }
+
+    renderNewsList(newsCache);
+  });
+}
 
 async function fetchNews() {
   let previousData = newsCache;
@@ -237,6 +286,8 @@ async function fetchNews() {
 
   if (!newsCache) {
     renderNewsStatus("불러오는 중...");
+  } else {
+    renderNewsRefreshedAt(null, "새로고침 중...");
   }
 
   try {

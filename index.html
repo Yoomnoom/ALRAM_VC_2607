@@ -54,11 +54,25 @@
         <div class="news-box-header-left">
           <span class="news-box-title">최근뉴스</span>
           <button type="button" class="save-alarms-btn" id="saveAlarmsBtn">💾 지금 저장</button>
+          <a
+            href="https://docs.google.com/spreadsheets/d/1GSkyVyhoKIl0hLsKEXRtBnM6TeVa01I5xEVgz5t40TY/edit?gid=110008335#gid=110008335"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="news-sheet-link"
+            title="저장 시트 열기"
+            >📊 시트 보기</a
+          >
           <span class="save-alarms-status" id="saveAlarmsStatus"></span>
         </div>
         <button type="button" class="news-close-btn" id="closeNewsBtn">✕</button>
       </div>
-      <span class="news-refreshed-at" id="newsRefreshedAt"></span>
+      <div class="news-meta-row">
+        <span class="news-refreshed-at" id="newsRefreshedAt"></span>
+        <label class="news-select-all-row">
+          <input type="checkbox" id="newsSelectAllCheckbox" />
+          뉴스 전체 선택
+        </label>
+      </div>
       <div class="news-list" id="newsTable"></div>
     </div>
   </div>
