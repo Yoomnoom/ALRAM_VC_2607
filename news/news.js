@@ -1,6 +1,8 @@
 const NEWS_TIMEOUT_MS = 5000;
 const NEWS_KEYWORDS_KEY = "newsKeywords";
 const DEFAULT_NEWS_KEYWORDS = ["스타트업", "웹툰"];
+const NEWS_MORE_STEP = 5;
+const newsDisplayCounts = {};
 
 function buildNewsKeywords() {
   try {
@@ -136,6 +138,33 @@ function renderNewsStatus(message, { showRetry = false, onRetry } = {}) {
   }
 }
 
+function buildMoreNewsBtn(keyword) {
+  const moreBtn = document.createElement("button");
+  moreBtn.type = "button";
+  moreBtn.className = "news-more-btn";
+  moreBtn.textContent = "▼ 더보기";
+
+  moreBtn.addEventListener("click", async () => {
+    moreBtn.disabled = true;
+    moreBtn.textContent = "불러오는 중...";
+
+    try {
+      const nextCount = (newsDisplayCounts[keyword] || NEWS_MORE_STEP) + NEWS_MORE_STEP;
+      const data = await fetchRecentNews(keyword, nextCount);
+      const items = (data && data.items) || [];
+      newsDisplayCounts[keyword] = nextCount;
+      if (newsCache) newsCache[keyword] = items;
+      renderNewsList(newsCache);
+    } catch (err) {
+      console.error("추가 뉴스를 불러오지 못했습니다:", err);
+      moreBtn.disabled = false;
+      moreBtn.textContent = "▼ 더보기";
+    }
+  });
+
+  return moreBtn;
+}
+
 function buildNewsSectionEl(category, items, newLinks, onRemove) {
   const section = document.createElement("div");
   section.className = "news-section";
@@ -184,6 +213,12 @@ function buildNewsSectionEl(category, items, newLinks, onRemove) {
   section.appendChild(headingRow);
 
   items.forEach((item) => section.appendChild(buildNewsCardEl(item, newLinks.has(item.link), category)));
+
+  const requestedCount = newsDisplayCounts[category] || NEWS_MORE_STEP;
+  if (items.length >= requestedCount) {
+    section.appendChild(buildMoreNewsBtn(category));
+  }
+
   return section;
 }
 
@@ -220,6 +255,15 @@ function renderNewsList(newsData, newLinks = new Set()) {
   });
 
   updateGlobalSelectAllState(newsData);
+  renderStickyTopHeight();
+}
+
+function renderStickyTopHeight() {
+  const stickyTop = document.querySelector(".news-box-sticky-top");
+  const box = document.querySelector(".news-box");
+  if (!stickyTop || !box) return;
+  const height = stickyTop.getBoundingClientRect().height;
+  box.style.setProperty("--news-sticky-top-height", `${height}px`);
 }
 
 function updateSectionSelectAllState(category) {
@@ -294,6 +338,7 @@ const openNewsBtn = document.getElementById("openNewsBtn");
 const newsOverlay = document.getElementById("newsOverlay");
 const closeNewsBtn = document.getElementById("closeNewsBtn");
 const newsSelectAllCheckbox = document.getElementById("newsSelectAllCheckbox");
+const newsMoreAllBtn = document.getElementById("newsMoreAllBtn");
 
 const NEWS_CACHE_KEY = "newsCache";
 let newsCache = null;
@@ -313,6 +358,35 @@ if (newsSelectAllCheckbox) {
     }
 
     renderNewsList(newsCache);
+  });
+}
+
+if (newsMoreAllBtn) {
+  newsMoreAllBtn.addEventListener("click", async () => {
+    const keywords = buildNewsKeywords();
+    if (keywords.length === 0 || !newsCache) return;
+
+    newsMoreAllBtn.disabled = true;
+    newsMoreAllBtn.textContent = "불러오는 중...";
+
+    try {
+      const results = await Promise.all(
+        keywords.map((keyword) => {
+          const nextCount = (newsDisplayCounts[keyword] || NEWS_MORE_STEP) + NEWS_MORE_STEP;
+          newsDisplayCounts[keyword] = nextCount;
+          return fetchRecentNews(keyword, nextCount);
+        })
+      );
+      keywords.forEach((keyword, i) => {
+        newsCache[keyword] = (results[i] && results[i].items) || [];
+      });
+      renderNewsList(newsCache);
+    } catch (err) {
+      console.error("전체 더보기 실패:", err);
+    } finally {
+      newsMoreAllBtn.disabled = false;
+      newsMoreAllBtn.textContent = "▼ 전체 더보기";
+    }
   });
 }
 
@@ -348,8 +422,12 @@ async function fetchNews() {
     renderNewsRefreshedAt(null, "새로고침 중...");
   }
 
+  keywords.forEach((keyword) => {
+    newsDisplayCounts[keyword] = NEWS_MORE_STEP;
+  });
+
   try {
-    const results = await Promise.all(keywords.map((keyword) => fetchRecentNews(keyword, 5)));
+    const results = await Promise.all(keywords.map((keyword) => fetchRecentNews(keyword, newsDisplayCounts[keyword])));
 
     const freshData = {};
     keywords.forEach((keyword, i) => {
@@ -438,6 +516,7 @@ function buildNewsSearchResultEl(keyword, items) {
   closeBtn.addEventListener("click", () => {
     newsSearchResultEl.innerHTML = "";
     newsSearchInput.value = "";
+    renderStickyTopHeight();
   });
   headingRow.appendChild(closeBtn);
 
@@ -508,6 +587,7 @@ async function fetchNewsSearchResult() {
   loading.className = "news-search-info";
   loading.textContent = "검색 중...";
   newsSearchResultEl.appendChild(loading);
+  renderStickyTopHeight();
 
   try {
     const data = await fetchRecentNews(keyword, 5);
@@ -519,6 +599,8 @@ async function fetchNewsSearchResult() {
     errEl.className = "news-search-info";
     errEl.textContent = "검색에 실패했습니다.";
     newsSearchResultEl.appendChild(errEl);
+  } finally {
+    renderStickyTopHeight();
   }
 }
 

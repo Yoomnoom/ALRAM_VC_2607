@@ -51,6 +51,7 @@
 
   <div class="news-panel" id="newsOverlay">
     <div class="news-box">
+      <div class="news-box-sticky-top">
       <div class="news-box-header">
         <div class="news-box-header-left">
           <span class="news-box-title">최근뉴스</span>
@@ -80,10 +81,14 @@
       <div class="news-search-result" id="newsSearchResult"></div>
       <div class="news-meta-row">
         <span class="news-refreshed-at" id="newsRefreshedAt"></span>
-        <label class="news-select-all-row">
-          <input type="checkbox" id="newsSelectAllCheckbox" />
-          뉴스 전체 선택
-        </label>
+        <div class="news-meta-right">
+          <label class="news-select-all-row">
+            <input type="checkbox" id="newsSelectAllCheckbox" />
+            뉴스 전체 선택
+          </label>
+          <button type="button" class="news-more-all-btn" id="newsMoreAllBtn">▼ 전체 더보기</button>
+        </div>
+      </div>
       </div>
       <div class="news-list" id="newsTable"></div>
     </div>
