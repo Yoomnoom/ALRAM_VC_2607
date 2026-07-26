@@ -421,6 +421,18 @@ function buildNewsSearchResultEl(keyword, items) {
   heading.className = "news-section-title";
   heading.textContent = `🔍 "${keyword}" 검색 결과`;
   headingRow.appendChild(heading);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "news-keyword-remove-btn";
+  closeBtn.title = "검색 결과 닫기";
+  closeBtn.textContent = "✕";
+  closeBtn.addEventListener("click", () => {
+    newsSearchResultEl.innerHTML = "";
+    newsSearchInput.value = "";
+  });
+  headingRow.appendChild(closeBtn);
+
   wrap.appendChild(headingRow);
 
   const keywords = buildNewsKeywords();
