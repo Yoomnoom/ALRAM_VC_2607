@@ -44,6 +44,7 @@ const timePickerCancel = document.getElementById("timePickerCancel");
 const timePickerConfirm = document.getElementById("timePickerConfirm");
 
 const STORAGE_KEY = "alarms";
+const ALARM_LABEL_MAX_LENGTH = 20;
 const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
 const SOUND_NAMES = { beep: "삐삐", chime: "차임벨", digital: "디지털음" };
 let alarms = loadAlarms();
@@ -319,6 +320,7 @@ function checkSnoozes(now) {
     if (alarm.snoozeUntil && nowMs >= alarm.snoozeUntil) {
       delete alarm.snoozeUntil;
       saveAlarms();
+      renderAlarms();
       triggerAlarm(alarm);
       break;
     }
@@ -381,6 +383,7 @@ async function loadAlarmNewsBriefing() {
     briefingItems = merged;
     briefingIndex = 0;
     renderNewsBriefing(briefingItems);
+    renderBriefingActive(briefingIndex);
     logBriefingToSheet(briefingItems, ringingAlarm.time);
     scheduleNewsBriefing();
   } catch (err) {
@@ -395,6 +398,7 @@ function scheduleNewsBriefing() {
     stopBeep();
     const index = briefingIndex % briefingItems.length;
     const item = briefingItems[index];
+    renderBriefingActive(index);
     const itemText = buildBriefingItemText(item, index);
     speakBriefing(itemText, () => {
       if (ringingAlarmId === null) return;
@@ -497,6 +501,7 @@ snoozeBtn.addEventListener("click", () => {
   if (alarm) {
     alarm.snoozeUntil = Date.now() + minutes * 60 * 1000;
     saveAlarms();
+    renderAlarms();
   }
 });
 
@@ -592,7 +597,7 @@ addBtn.addEventListener("click", () => {
     const target = alarms.find((a) => a.id === editingAlarmId);
     if (target) {
       target.time = selectedTime;
-      target.label = alarmLabelInput.value.trim();
+      target.label = alarmLabelInput.value.trim().slice(0, ALARM_LABEL_MAX_LENGTH);
       target.repeat = repeat;
       target.sound = alarmSoundSelect.value;
     }
@@ -600,7 +605,7 @@ addBtn.addEventListener("click", () => {
     alarms.push({
       id: Date.now(),
       time: selectedTime,
-      label: alarmLabelInput.value.trim(),
+      label: alarmLabelInput.value.trim().slice(0, ALARM_LABEL_MAX_LENGTH),
       repeat,
       sound: alarmSoundSelect.value,
       enabled: true,
@@ -725,17 +730,27 @@ function renderAlarms() {
       label.textContent = alarm.label;
       titleRow.appendChild(label);
     }
-
     const days = document.createElement("span");
     days.className = "days";
     days.textContent = formatRepeat(alarm);
+
+    const metaRow = document.createElement("div");
+    metaRow.className = "alarm-meta-row";
     const meta = document.createElement("span");
     meta.className = "meta";
     const soundName = SOUND_NAMES[alarm.sound] || SOUND_NAMES.beep;
     meta.textContent = `🔔 ${soundName}`;
+    metaRow.appendChild(meta);
+    if (alarm.snoozeUntil && alarm.snoozeUntil > Date.now()) {
+      const snoozeBadge = document.createElement("span");
+      snoozeBadge.className = "snooze-badge";
+      snoozeBadge.textContent = "😴 스누즈중";
+      metaRow.appendChild(snoozeBadge);
+    }
+
     info.appendChild(titleRow);
     info.appendChild(days);
-    info.appendChild(meta);
+    info.appendChild(metaRow);
 
     const actions = document.createElement("div");
     actions.className = "alarm-actions";
@@ -841,12 +856,20 @@ function renderSun() {
 }
 
 function renderFog(count) {
+  const veil = document.createElement("div");
+  veil.className = "fog-veil";
+  weatherBg.appendChild(veil);
+
   for (let i = 0; i < count; i++) {
     const band = document.createElement("div");
     band.className = "fog-band";
-    band.style.top = 10 + i * 22 + "%";
-    band.style.opacity = 0.5 + Math.random() * 0.4;
-    band.style.animationDuration = 10 + Math.random() * 6 + "s";
+    const duration = (10 + Math.random() * 8) / 3;
+    const size = 160 + Math.random() * 140;
+    band.style.left = Math.random() * 90 + "%";
+    band.style.width = size + "px";
+    band.style.height = size * (0.7 + Math.random() * 0.3) + "px";
+    band.style.animationDuration = duration + "s";
+    band.style.animationDelay = -Math.random() * duration + "s";
     weatherBg.appendChild(band);
   }
 }
@@ -909,7 +932,7 @@ function setWeatherBackground(condition) {
     case "Sand":
     case "Ash":
       weatherBg.classList.add("mist");
-      renderFog(4);
+      renderFog(8);
       break;
     default:
       weatherBg.classList.add("clouds");

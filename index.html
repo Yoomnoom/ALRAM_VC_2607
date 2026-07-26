@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>알람 앱</title>
+<link rel="icon" href="data:," />
 <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="news/news.css" />
 </head>
@@ -130,7 +131,7 @@
           </div>
         </div>
 
-        <input type="text" id="alarmLabel" placeholder="✏️ 알람 이름 (선택)" />
+        <input type="text" id="alarmLabel" placeholder="✏️ 알람 이름 (선택, 최대 20자)" maxlength="20" />
 
         <div class="field-group">
           <span class="field-label">🔔 알람음</span>
@@ -197,7 +198,6 @@
     <div class="ringing-box">
       <p class="ringing-label" id="ringingLabel">알람</p>
       <p class="ringing-time" id="ringingTime">00:00</p>
-      <div class="briefing-list" id="newsBriefingList"></div>
       <div class="snooze-picker" id="snoozePicker">
         <button type="button" class="snooze-min-btn" data-min="5">5분</button>
         <button type="button" class="snooze-min-btn" data-min="10">10분</button>
@@ -207,6 +207,7 @@
         <button id="snoozeBtn" class="snooze-btn">다시 울림</button>
         <button id="stopBtn">알람 끄기</button>
       </div>
+      <div class="briefing-list" id="newsBriefingList"></div>
     </div>
   </div>
 

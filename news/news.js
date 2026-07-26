@@ -402,8 +402,16 @@ async function fetchAlarmBriefingNews() {
   if (keywords.length === 0) return [];
 
   const results = await Promise.all(keywords.map((keyword) => fetchRecentNews(keyword, 5)));
-  const merged = results.flatMap((data) => (data && data.items) || []);
-  return merged.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+  const groups = results.map((data, i) => ((data && data.items) || []).map((item) => ({ ...item, keyword: keywords[i] })));
+
+  const merged = [];
+  const maxLen = Math.max(0, ...groups.map((group) => group.length));
+  for (let i = 0; i < maxLen; i++) {
+    groups.forEach((group) => {
+      if (group[i]) merged.push(group[i]);
+    });
+  }
+  return merged;
 }
 
 const newsSearchInput = document.getElementById("newsSearchInput");
@@ -527,7 +535,8 @@ function buildBriefingItemText(item, index) {
   const ordinal = BRIEFING_ORDINALS[index] || `${index + 1}번째`;
   const title = stripHtmlTags(item.title);
   const desc = stripHtmlTags(item.description);
-  return `${ordinal} 뉴스, ${title}. ${desc}`;
+  const keywordPrefix = item.keyword ? `${item.keyword} 키워드, ` : "";
+  return `${ordinal} 뉴스, ${keywordPrefix}${title}. ${desc}`;
 }
 
 function buildBriefingText(items) {
@@ -540,9 +549,17 @@ function renderNewsBriefing(items) {
 
   listEl.innerHTML = "";
 
-  items.forEach((item) => {
+  items.forEach((item, index) => {
     const card = document.createElement("div");
     card.className = "news-card briefing-card";
+    card.dataset.index = index;
+
+    if (item.keyword) {
+      const badge = document.createElement("span");
+      badge.className = "briefing-keyword-badge";
+      badge.textContent = `📌 ${item.keyword}`;
+      card.appendChild(badge);
+    }
 
     const title = document.createElement("p");
     title.className = "news-title";
@@ -556,6 +573,18 @@ function renderNewsBriefing(items) {
     card.appendChild(desc);
     listEl.appendChild(card);
   });
+}
+
+function renderBriefingActive(index) {
+  const listEl = document.getElementById("newsBriefingList");
+  if (!listEl) return;
+
+  listEl.querySelectorAll(".briefing-card").forEach((card) => {
+    card.classList.toggle("active", Number(card.dataset.index) === index);
+  });
+
+  const activeCard = listEl.querySelector(".briefing-card.active");
+  if (activeCard) activeCard.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 const BRIEFING_FALLBACK_DISPLAY_MS = 5000;

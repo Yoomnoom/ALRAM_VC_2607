@@ -20,7 +20,12 @@
   align-items: flex-start;
   justify-content: flex-start;
   gap: 20px;
-  flex-wrap: wrap;
+}
+
+@media (max-width: 820px) {
+  .layout {
+    flex-wrap: wrap;
+  }
 }
 
 .news-panel {
@@ -28,12 +33,15 @@
 }
 
 .news-panel.show {
-  display: block;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .news-box {
-  width: min(1100px, 90vw);
-  max-height: 85vh;
+  width: 100%;
+  max-width: 1100px;
+  max-height: 960px;
   background: #fbfbf9;
   border-radius: 28px;
   padding: 24px 20px;
@@ -361,7 +369,7 @@
   flex-direction: column;
   gap: 8px;
   width: min(480px, 85vw);
-  margin: 4px 0;
+  margin: 20px 0 4px;
 }
 
 .briefing-list:empty {
@@ -370,5 +378,22 @@
 
 .briefing-card {
   text-align: left;
+  border: 2px solid transparent;
+}
+
+.briefing-card.active {
+  border-color: #8ec3e0;
+  background: #eef4f8;
+}
+
+.briefing-keyword-badge {
+  display: inline-block;
+  margin-bottom: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #d8e6ee;
+  color: #5f97bd;
+  font-size: 10px;
+  font-weight: bold;
 }
 
