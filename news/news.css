@@ -265,6 +265,16 @@
   font-weight: bold;
   color: #3d3a36;
   line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.news-keyword-highlight {
+  background: none;
+  color: #5f97bd;
+  font-weight: bold;
+  text-decoration: underline;
 }
 
 .news-desc {

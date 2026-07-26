@@ -50,7 +50,33 @@ function buildDateLabel(pubDate) {
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function buildHighlightedText(text, keyword) {
+  const fragment = document.createDocumentFragment();
+  if (!keyword) {
+    fragment.appendChild(document.createTextNode(text));
+    return fragment;
+  }
+
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escapedKeyword})`, "gi"));
+
+  parts.forEach((part, i) => {
+    if (!part) return;
+    if (i % 2 === 1) {
+      const mark = document.createElement("mark");
+      mark.className = "news-keyword-highlight";
+      mark.textContent = part;
+      fragment.appendChild(mark);
+    } else {
+      fragment.appendChild(document.createTextNode(part));
+    }
+  });
+
+  return fragment;
+}
+
 function buildNewsCardEl(item, isNew, category) {
+  const highlightKeyword = category && category.startsWith("search:") ? category.slice(7) : category;
   const cell = document.createElement("div");
   cell.className = "news-card";
 
@@ -71,7 +97,7 @@ function buildNewsCardEl(item, isNew, category) {
 
   const title = document.createElement("p");
   title.className = "news-title";
-  title.textContent = stripHtmlTags(item.title);
+  title.appendChild(buildHighlightedText(stripHtmlTags(item.title), highlightKeyword));
 
   if (isNew) {
     const badge = document.createElement("span");
@@ -85,7 +111,7 @@ function buildNewsCardEl(item, isNew, category) {
 
   const desc = document.createElement("p");
   desc.className = "news-desc";
-  desc.textContent = stripHtmlTags(item.description);
+  desc.appendChild(buildHighlightedText(stripHtmlTags(item.description), highlightKeyword));
 
   const meta = document.createElement("div");
   meta.className = "news-meta";
@@ -645,11 +671,11 @@ function renderNewsBriefing(items) {
 
     const title = document.createElement("p");
     title.className = "news-title";
-    title.textContent = stripHtmlTags(item.title);
+    title.appendChild(buildHighlightedText(stripHtmlTags(item.title), item.keyword));
 
     const desc = document.createElement("p");
     desc.className = "news-desc";
-    desc.textContent = stripHtmlTags(item.description);
+    desc.appendChild(buildHighlightedText(stripHtmlTags(item.description), item.keyword));
 
     card.appendChild(title);
     card.appendChild(desc);
