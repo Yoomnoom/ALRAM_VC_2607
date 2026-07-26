@@ -68,7 +68,7 @@ body {
   left: -180px;
   width: 140px;
   height: 50px;
-  background: rgba(255, 255, 255, 0.85);
+  background: #fff;
   border-radius: 999px;
   filter: blur(1px);
   animation-name: drift-cloud;
