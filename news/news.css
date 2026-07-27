@@ -15,6 +15,43 @@
   background: #e0ebf2;
 }
 
+.news-refresh-btn {
+  flex: 0 0 auto;
+  width: 44px;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  background: #eef4f8;
+  color: #5f97bd;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.news-refresh-btn:hover {
+  background: #e0ebf2;
+}
+
+.news-refresh-icon {
+  display: block;
+  transform-origin: center;
+}
+
+.news-refresh-icon.spinning {
+  animation: news-refresh-spin 0.8s linear infinite;
+}
+
+@keyframes news-refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .layout {
   display: flex;
   align-items: flex-start;

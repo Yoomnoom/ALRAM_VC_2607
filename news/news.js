@@ -361,6 +361,8 @@ function renderNewsRefreshedAt(date, failMessage) {
 }
 
 const openNewsBtn = document.getElementById("openNewsBtn");
+const newsRefreshBtn = document.getElementById("newsRefreshBtn");
+const newsRefreshIcon = document.getElementById("newsRefreshIcon");
 const newsOverlay = document.getElementById("newsOverlay");
 const closeNewsBtn = document.getElementById("closeNewsBtn");
 const newsSelectAllCheckbox = document.getElementById("newsSelectAllCheckbox");
@@ -491,7 +493,20 @@ async function fetchNews() {
 if (openNewsBtn && newsOverlay) {
   openNewsBtn.addEventListener("click", () => {
     newsOverlay.classList.add("show");
-    fetchNews();
+    if (newsRefreshIcon) newsRefreshIcon.classList.add("spinning");
+    fetchNews().finally(() => {
+      if (newsRefreshIcon) newsRefreshIcon.classList.remove("spinning");
+    });
+  });
+}
+
+if (newsRefreshBtn && newsOverlay) {
+  newsRefreshBtn.addEventListener("click", () => {
+    newsOverlay.classList.add("show");
+    if (newsRefreshIcon) newsRefreshIcon.classList.add("spinning");
+    fetchNews().finally(() => {
+      if (newsRefreshIcon) newsRefreshIcon.classList.remove("spinning");
+    });
   });
 }
 
