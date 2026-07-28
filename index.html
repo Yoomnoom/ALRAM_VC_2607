@@ -4,7 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>알람 앱</title>
-<link rel="icon" href="data:," />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#eef2f5" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="news/news.css" />
 </head>
@@ -227,5 +230,12 @@
   <script src="config.js"></script>
   <script src="script.js"></script>
   <script src="news/news.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
