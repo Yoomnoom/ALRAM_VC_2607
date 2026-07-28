@@ -1,3 +1,37 @@
+const appModalOverlay = document.getElementById("appModalOverlay");
+const appModalMessage = document.getElementById("appModalMessage");
+const appModalConfirmBtn = document.getElementById("appModalConfirmBtn");
+const appModalCancelBtn = document.getElementById("appModalCancelBtn");
+
+let resolvePendingAppModal = null;
+
+function settleAppModal(result) {
+  appModalOverlay.classList.remove("show");
+  if (resolvePendingAppModal) {
+    const resolve = resolvePendingAppModal;
+    resolvePendingAppModal = null;
+    resolve(result);
+  }
+}
+
+appModalConfirmBtn.addEventListener("click", () => settleAppModal(true));
+appModalCancelBtn.addEventListener("click", () => settleAppModal(false));
+
+function showAppConfirm(message, { showCancel = false } = {}) {
+  if (resolvePendingAppModal) settleAppModal(false);
+
+  return new Promise((resolve) => {
+    resolvePendingAppModal = resolve;
+    appModalMessage.textContent = message;
+    appModalCancelBtn.hidden = !showCancel;
+    appModalOverlay.classList.add("show");
+  });
+}
+
+function showAppAlert(message) {
+  return showAppConfirm(message, { showCancel: false });
+}
+
 const clockEl = document.getElementById("clock");
 const timeDisplayBtn = document.getElementById("timeDisplayBtn");
 const alarmLabelInput = document.getElementById("alarmLabel");
@@ -113,6 +147,10 @@ function closeTimePicker() {
 
 timeDisplayBtn.addEventListener("click", openTimePicker);
 timePickerCancel.addEventListener("click", closeTimePicker);
+
+timePickerOverlay.addEventListener("click", (e) => {
+  if (e.target === timePickerOverlay) closeTimePicker();
+});
 
 timePickerConfirm.addEventListener("click", () => {
   let hour24 = pickHour % 12;
@@ -560,14 +598,20 @@ openAddBtn.addEventListener("click", () => {
   addAlarmOverlay.classList.add("show");
 });
 
-cancelAddBtn.addEventListener("click", () => {
+function cancelAddAlarm() {
   resetAddForm();
   addAlarmOverlay.classList.remove("show");
+}
+
+cancelAddBtn.addEventListener("click", cancelAddAlarm);
+
+addAlarmOverlay.addEventListener("click", (e) => {
+  if (e.target === addAlarmOverlay) cancelAddAlarm();
 });
 
 addBtn.addEventListener("click", () => {
   if (!selectedTime) {
-    alert("알람 시간을 선택해주세요.");
+    showAppAlert("알람 시간을 선택해주세요.");
     return;
   }
 
@@ -575,13 +619,13 @@ addBtn.addEventListener("click", () => {
   let repeat;
   if (repeatValue === "custom") {
     if (selectedDays.length === 0) {
-      alert("반복할 요일을 선택해주세요.");
+      showAppAlert("반복할 요일을 선택해주세요.");
       return;
     }
     repeat = { type: "custom", days: [...selectedDays].sort((a, b) => a - b) };
   } else if (repeatValue === "interval") {
     if (!intervalStartDate.value) {
-      alert("시작일을 선택해주세요.");
+      showAppAlert("시작일을 선택해주세요.");
       return;
     }
     repeat = {
@@ -630,49 +674,49 @@ function buildAlarmSaveRow(alarm) {
   };
 }
 
-if (saveAlarmsBtn && saveAlarmsStatus) {
-  saveAlarmsBtn.addEventListener("click", async () => {
-    const isPartialSave = selectedAlarmIds.size > 0;
-    const targetAlarms = isPartialSave ? alarms.filter((a) => selectedAlarmIds.has(a.id)) : alarms;
+async function runSaveAlarms(statusEl) {
+  const isPartialSave = selectedAlarmIds.size > 0;
+  const targetAlarms = isPartialSave ? alarms.filter((a) => selectedAlarmIds.has(a.id)) : alarms;
 
-    saveAlarmsStatus.textContent = "저장 중...";
+  if (statusEl) statusEl.textContent = "저장 중...";
 
-    let alarmsSaved = null; // null = 저장할 알람이 없어서 건너뜀
-    if (targetAlarms.length > 0) {
-      try {
-        const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ alarms: targetAlarms.map(buildAlarmSaveRow) }),
-        });
-        const data = await response.json();
-        alarmsSaved = Boolean(data && data.result === "success");
-      } catch (err) {
-        console.error("알람 저장 실패:", err);
-        alarmsSaved = false;
-      }
+  let alarmsSaved = null; // null = 저장할 알람이 없어서 건너뜀
+  if (targetAlarms.length > 0) {
+    try {
+      const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ alarms: targetAlarms.map(buildAlarmSaveRow) }),
+      });
+      const data = await response.json();
+      alarmsSaved = Boolean(data && data.result === "success");
+    } catch (err) {
+      console.error("알람 저장 실패:", err);
+      alarmsSaved = false;
     }
+  }
 
-    const newsSaved = await logSelectedNewsToSheet();
+  const newsSaved = await logSelectedNewsToSheet();
 
-    if (alarmsSaved === null && newsSaved === null) {
-      saveAlarmsStatus.textContent = "저장할 항목이 없습니다";
-      return;
-    }
+  if (alarmsSaved === null && newsSaved === null) {
+    if (statusEl) statusEl.textContent = "저장할 항목이 없습니다";
+    return;
+  }
 
-    const scopeLabel = isPartialSave ? `선택한 ${targetAlarms.length}개` : "전체";
-    const parts = [];
-    if (alarmsSaved === true) parts.push(`알람(${scopeLabel}) 저장됨`);
-    else if (alarmsSaved === false) parts.push("알람 저장 실패");
+  const scopeLabel = isPartialSave ? `선택한 ${targetAlarms.length}개` : "전체";
+  const parts = [];
+  if (alarmsSaved === true) parts.push(`알람(${scopeLabel}) 저장됨`);
+  else if (alarmsSaved === false) parts.push("알람 저장 실패");
 
-    if (newsSaved === true) parts.push("뉴스 저장됨");
-    else if (newsSaved === false) parts.push("뉴스 저장 실패");
+  if (newsSaved === true) parts.push("뉴스 저장됨");
+  else if (newsSaved === false) parts.push("뉴스 저장 실패");
 
-    const now = new Date();
-    const timeLabel = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    saveAlarmsStatus.textContent = `${parts.join(", ")} (${timeLabel})`;
-  });
+  const now = new Date();
+  const timeLabel = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  if (statusEl) statusEl.textContent = `${parts.join(", ")} (${timeLabel})`;
 }
+
+if (saveAlarmsBtn) saveAlarmsBtn.addEventListener("click", () => runSaveAlarms(saveAlarmsStatus));
 
 function toggleAlarm(id) {
   const alarm = alarms.find((a) => a.id === id);
@@ -972,4 +1016,109 @@ setInterval(updateClock, 1000);
 updateClock();
 resetAddForm();
 renderAlarms();
+
+const tabButtons = document.querySelectorAll(".tab-btn");
+const tabPages = document.querySelectorAll(".tab-page");
+
+function switchTab(tabName, opts = {}) {
+  if (addAlarmOverlay.classList.contains("show")) cancelAddAlarm();
+  if (timePickerOverlay.classList.contains("show")) closeTimePicker();
+
+  tabPages.forEach((page) => {
+    page.hidden = page.dataset.tabPage !== tabName;
+  });
+  tabButtons.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
+
+  if (tabName === "news" && !opts.skipAutoFetch) {
+    try {
+      if (typeof fetchNewsIfNeeded === "function") fetchNewsIfNeeded();
+    } catch (err) {
+      console.error("뉴스 탭 로딩 실패:", err);
+    }
+  }
+}
+
+tabButtons.forEach((btn) => {
+  btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+});
+
+const openNewsBtn = document.getElementById("openNewsBtn");
+const newsRefreshBtn = document.getElementById("newsRefreshBtn");
+const newsRefreshIcon = document.getElementById("newsRefreshIcon");
+
+if (openNewsBtn) {
+  openNewsBtn.addEventListener("click", () => switchTab("news"));
+}
+
+if (newsRefreshBtn) {
+  newsRefreshBtn.addEventListener("click", () => {
+    switchTab("news", { skipAutoFetch: true });
+    try {
+      if (typeof fetchNewsRefresh === "function") fetchNewsRefresh(newsRefreshIcon);
+    } catch (err) {
+      console.error("뉴스 새로고침 실패:", err);
+    }
+  });
+}
+
+try {
+  if (typeof renderNewsTabLabels === "function") renderNewsTabLabels();
+} catch (err) {
+  console.error("키워드 탭 라벨 표시 실패:", err);
+}
 loadWeather();
+
+const DARK_MODE_KEY = "darkModeEnabled";
+const darkModeToggle = document.getElementById("darkModeToggle");
+
+function applyDarkMode(enabled) {
+  document.body.classList.toggle("dark-theme", enabled);
+}
+
+const storedDarkMode = localStorage.getItem(DARK_MODE_KEY) === "true";
+applyDarkMode(storedDarkMode);
+
+if (darkModeToggle) {
+  darkModeToggle.checked = storedDarkMode;
+  darkModeToggle.addEventListener("change", () => {
+    localStorage.setItem(DARK_MODE_KEY, String(darkModeToggle.checked));
+    applyDarkMode(darkModeToggle.checked);
+  });
+}
+
+const FONT_SCALE_KEY = "fontScale";
+const FONT_SCALE_VALUES = { sm: 0.9, md: 1, lg: 1.15 };
+const fontScaleButtons = document.querySelectorAll(".settings-segment-btn[data-font-scale]");
+
+function applyFontScale(scale) {
+  document.body.style.zoom = FONT_SCALE_VALUES[scale] || 1;
+  fontScaleButtons.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.fontScale === scale);
+  });
+}
+
+const storedFontScale = localStorage.getItem(FONT_SCALE_KEY) || "md";
+applyFontScale(storedFontScale);
+
+fontScaleButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const scale = btn.dataset.fontScale;
+    localStorage.setItem(FONT_SCALE_KEY, scale);
+    applyFontScale(scale);
+  });
+});
+
+const resetLocalDataBtn = document.getElementById("resetLocalDataBtn");
+if (resetLocalDataBtn) {
+  resetLocalDataBtn.addEventListener("click", async () => {
+    const ok = await showAppConfirm("지정 키워드와 뉴스 캐시를 초기화할까요? 등록된 알람은 그대로 유지됩니다.", {
+      showCancel: true,
+    });
+    if (!ok) return;
+    localStorage.removeItem("newsKeywords");
+    localStorage.removeItem("newsCache");
+    location.reload();
+  });
+}

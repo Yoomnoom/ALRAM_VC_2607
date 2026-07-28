@@ -144,24 +144,26 @@ function buildNewsCardEl(item, isNew, category) {
 }
 
 function renderNewsStatus(message, { showRetry = false, onRetry } = {}) {
-  const tableEl = document.getElementById("newsTable");
-  if (!tableEl) return;
+  ["newsTableKeyword1", "newsTableKeyword2"].forEach((id) => {
+    const tableEl = document.getElementById(id);
+    if (!tableEl) return;
 
-  tableEl.querySelectorAll(".news-section, .news-status, .news-retry-btn").forEach((el) => el.remove());
+    tableEl.querySelectorAll(".news-section, .news-status, .news-retry-btn").forEach((el) => el.remove());
 
-  const status = document.createElement("p");
-  status.className = "news-status";
-  status.textContent = message;
-  tableEl.appendChild(status);
+    const status = document.createElement("p");
+    status.className = "news-status";
+    status.textContent = message;
+    tableEl.appendChild(status);
 
-  if (showRetry) {
-    const retryBtn = document.createElement("button");
-    retryBtn.type = "button";
-    retryBtn.className = "news-retry-btn";
-    retryBtn.textContent = "재시도";
-    retryBtn.addEventListener("click", onRetry);
-    tableEl.appendChild(retryBtn);
-  }
+    if (showRetry) {
+      const retryBtn = document.createElement("button");
+      retryBtn.type = "button";
+      retryBtn.className = "news-retry-btn";
+      retryBtn.textContent = "재시도";
+      retryBtn.addEventListener("click", onRetry);
+      tableEl.appendChild(retryBtn);
+    }
+  });
 }
 
 function buildMoreNewsBtn(keyword) {
@@ -248,21 +250,37 @@ function buildNewsSectionEl(category, items, newLinks, onRemove) {
   return section;
 }
 
-function renderNewsList(newsData, newLinks = new Set()) {
-  const listEl = document.getElementById("newsTable");
-  if (!listEl) return;
-
-  listEl.querySelectorAll(".news-section, .news-status, .news-retry-btn").forEach((el) => el.remove());
-
+function renderNewsTabLabels() {
   const keywords = buildNewsKeywords();
 
-  if (keywords.length === 0) {
-    renderNewsStatus("지정된 키워드가 없습니다. 위 검색창에서 관심 키워드를 검색하고 지정해보세요.");
-    updateGlobalSelectAllState(newsData);
-    return;
-  }
+  [1, 2].forEach((slot) => {
+    const keyword = keywords[slot - 1];
+    const switchBtn = document.getElementById(`keywordSwitchBtn${slot}`);
+    if (!switchBtn) return;
+    switchBtn.textContent = keyword || `키워드${slot} 미지정`;
+    switchBtn.disabled = !keyword;
+  });
+}
 
-  keywords.forEach((keyword) => {
+function renderNewsList(newsData, newLinks = new Set()) {
+  renderNewsTabLabels();
+  const keywords = buildNewsKeywords();
+
+  [1, 2].forEach((slot) => {
+    const listEl = document.getElementById(`newsTableKeyword${slot}`);
+    if (!listEl) return;
+
+    listEl.querySelectorAll(".news-section, .news-status, .news-retry-btn").forEach((el) => el.remove());
+
+    const keyword = keywords[slot - 1];
+    if (!keyword) {
+      const status = document.createElement("p");
+      status.className = "news-status";
+      status.textContent = "지정된 키워드가 없습니다. 검색 탭에서 관심 키워드를 검색하고 지정해보세요.";
+      listEl.appendChild(status);
+      return;
+    }
+
     const items = (newsData && newsData[keyword]) || [];
     listEl.appendChild(
       buildNewsSectionEl(keyword, items, newLinks, () => {
@@ -281,12 +299,11 @@ function renderNewsList(newsData, newLinks = new Set()) {
   });
 
   updateGlobalSelectAllState(newsData);
-  renderStickyTopHeight();
 }
 
 function renderStickyTopHeight() {
-  const stickyTop = document.querySelector(".news-box-sticky-top");
-  const box = document.querySelector(".news-box");
+  const stickyTop = document.querySelector("#tabPage-news .news-box-sticky-top");
+  const box = document.querySelector("#tabPage-news .news-box");
   if (!stickyTop || !box) return;
   const height = stickyTop.getBoundingClientRect().height;
   box.style.setProperty("--news-sticky-top-height", `${height}px`);
@@ -349,28 +366,54 @@ function buildNewLinkSet(previousData, freshData) {
 }
 
 function renderNewsRefreshedAt(date, failMessage) {
-  const el = document.getElementById("newsRefreshedAt");
-  if (!el) return;
+  const els = document.querySelectorAll(".news-refreshed-at[data-keyword-slot]");
+  if (!els.length) return;
 
-  if (failMessage) {
-    el.textContent = failMessage;
-    return;
-  }
+  const text =
+    typeof failMessage === "string"
+      ? failMessage
+      : `마지막 갱신: ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 
-  el.textContent = `마지막 갱신: ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  els.forEach((el) => {
+    el.textContent = text;
+  });
 }
 
-const openNewsBtn = document.getElementById("openNewsBtn");
-const newsRefreshBtn = document.getElementById("newsRefreshBtn");
-const newsRefreshIcon = document.getElementById("newsRefreshIcon");
-const newsOverlay = document.getElementById("newsOverlay");
-const closeNewsBtn = document.getElementById("closeNewsBtn");
-const newsSelectAllCheckbox = document.getElementById("newsSelectAllCheckbox");
-const newsMoreAllBtn = document.getElementById("newsMoreAllBtn");
+const keywordSwitchBtn1 = document.getElementById("keywordSwitchBtn1");
+const keywordSwitchBtn2 = document.getElementById("keywordSwitchBtn2");
+const newsTableKeywordEl = document.getElementById("newsTableKeyword");
+
+if (keywordSwitchBtn1 && keywordSwitchBtn2 && newsTableKeywordEl) {
+  [keywordSwitchBtn1, keywordSwitchBtn2].forEach((btn) => {
+    btn.addEventListener("click", () => {
+      newsTableKeywordEl.dataset.activeSlot = btn.dataset.keywordSlot;
+      keywordSwitchBtn1.classList.toggle("active", btn === keywordSwitchBtn1);
+      keywordSwitchBtn2.classList.toggle("active", btn === keywordSwitchBtn2);
+    });
+  });
+}
 
 const NEWS_CACHE_KEY = "newsCache";
 let newsCache = null;
 const selectedNewsLinks = new Set();
+
+function fetchNewsIfNeeded() {
+  if (newsCache) {
+    renderNewsList(newsCache);
+    return;
+  }
+  return fetchNews();
+}
+
+function fetchNewsRefresh(iconEl) {
+  if (iconEl) iconEl.classList.add("spinning");
+  fetchNews().finally(() => {
+    if (iconEl) iconEl.classList.remove("spinning");
+  });
+}
+
+const newsSelectAllCheckbox = document.getElementById("newsSelectAllCheckbox");
+const newsMoreAllBtn = document.getElementById("newsMoreAllBtn");
 
 if (newsSelectAllCheckbox) {
   newsSelectAllCheckbox.addEventListener("change", () => {
@@ -439,8 +482,7 @@ async function fetchNews() {
   if (keywords.length === 0) {
     newsCache = {};
     renderNewsList(newsCache);
-    const refreshedEl = document.getElementById("newsRefreshedAt");
-    if (refreshedEl) refreshedEl.textContent = "";
+    renderNewsRefreshedAt(null, "");
     return;
   }
 
@@ -488,32 +530,6 @@ async function fetchNews() {
       renderNewsStatus("뉴스를 불러올 수 없습니다");
     }
   }
-}
-
-if (openNewsBtn && newsOverlay) {
-  openNewsBtn.addEventListener("click", () => {
-    newsOverlay.classList.add("show");
-    if (newsRefreshIcon) newsRefreshIcon.classList.add("spinning");
-    fetchNews().finally(() => {
-      if (newsRefreshIcon) newsRefreshIcon.classList.remove("spinning");
-    });
-  });
-}
-
-if (newsRefreshBtn && newsOverlay) {
-  newsRefreshBtn.addEventListener("click", () => {
-    newsOverlay.classList.add("show");
-    if (newsRefreshIcon) newsRefreshIcon.classList.add("spinning");
-    fetchNews().finally(() => {
-      if (newsRefreshIcon) newsRefreshIcon.classList.remove("spinning");
-    });
-  });
-}
-
-if (closeNewsBtn && newsOverlay) {
-  closeNewsBtn.addEventListener("click", () => {
-    newsOverlay.classList.remove("show");
-  });
 }
 
 async function fetchAlarmBriefingNews() {
@@ -791,3 +807,5 @@ async function logSelectedNewsToSheet() {
     return false;
   }
 }
+
+renderNewsTabLabels();

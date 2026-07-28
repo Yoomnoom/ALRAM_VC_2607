@@ -25,6 +25,8 @@
 
 - 함수 시그니처(함수명, 파라미터명, 파라미터 순서)는 현재 `news/news.js`에 구현된 코드를 기준으로 한다.
 - 예: `fetchRecentNews(keyword, count = 5)`, `fetchNews()`, `fetchAlarmBriefingNews()`, `speakBriefing(text, onEnd)`, `stopBriefing()`
+- 하단 탭(알람/뉴스/설정) 구조 도입 이후 추가된 함수: `fetchNewsIfNeeded()`(탭 진입 시 캐시 있으면 렌더만, 없으면 `fetchNews()` 호출), `fetchNewsRefresh(iconEl)`(강제 새로고침 + 아이콘 스핀 처리), `renderNewsTabLabels()`(키워드 전환 버튼 라벨 갱신)
+- `updateSectionSelectAllState(category)` / `updateGlobalSelectAllState(newsData)`는 이번 세션 이전부터 있던 함수로, `update` 접두사가 위 세 카테고리 규칙과 맞지 않는 기존 예외다. 신규 함수에서 `update` 접두사를 새로 따라 하지 말 것 — 필요하면 `renderXxx`로 만든다.
 - `ETC/최근뉴스_기술명세서.md`는 초기 기획 단계의 설계 스케치(React+Supabase 개념안)로, 실제 구현과 함수명·구조가 달라 시그니처 기준으로 참고하지 않는다.
 - 리팩터링·가독성 개선 목적이라도 기존 함수의 파라미터 이름이나 순서를 임의로 바꾸지 않는다. 변경이 필요하다고 판단되면 먼저 사용자에게 확인한다.
 

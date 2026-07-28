@@ -14,97 +14,170 @@
 <body>
   <div class="weather-bg" id="weatherBg"></div>
 
-  <div class="layout">
-  <div class="app">
-    <div class="weather" id="weather">기온 불러오는 중...</div>
-    <select id="weatherPreviewSelect" class="weather-preview-select">
-      <option value="">🔍 날씨 배경 미리보기</option>
-      <option value="Clear">☀️ 맑음</option>
-      <option value="Clouds">☁️ 구름</option>
-      <option value="Rain">🌧️ 비</option>
-      <option value="Drizzle">🌦️ 이슬비</option>
-      <option value="Thunderstorm">⛈️ 뇌우</option>
-      <option value="Snow">❄️ 눈</option>
-      <option value="Mist">🌫️ 안개</option>
-    </select>
+  <div class="app-shell">
+    <div class="tab-page" id="tabPage-alarm" data-tab-page="alarm">
+      <div class="app">
+        <div class="weather" id="weather">기온 불러오는 중...</div>
+        <select id="weatherPreviewSelect" class="weather-preview-select">
+          <option value="">🔍 날씨 배경 미리보기</option>
+          <option value="Clear">☀️ 맑음</option>
+          <option value="Clouds">☁️ 구름</option>
+          <option value="Rain">🌧️ 비</option>
+          <option value="Drizzle">🌦️ 이슬비</option>
+          <option value="Thunderstorm">⛈️ 뇌우</option>
+          <option value="Snow">❄️ 눈</option>
+          <option value="Mist">🌫️ 안개</option>
+        </select>
 
-    <div class="hero-clock">
-      <img src="images/알람시계_re.png" alt="알람 시계" class="hero-image" />
-      <div class="hand-pivot">
-        <div class="hand hour-hand" id="hourHand"></div>
-        <div class="hand minute-hand" id="minuteHand"></div>
-        <div class="hand second-hand" id="secondHand"></div>
+        <div class="hero-clock">
+          <img src="images/알람시계_re.png" alt="알람 시계" class="hero-image" />
+          <div class="hand-pivot">
+            <div class="hand hour-hand" id="hourHand"></div>
+            <div class="hand minute-hand" id="minuteHand"></div>
+            <div class="hand second-hand" id="secondHand"></div>
+          </div>
+        </div>
+        <h1>알람</h1>
+
+        <div class="clock" id="clock">00:00:00</div>
+
+        <div class="list-header">
+          <span class="list-title">알람 목록</span>
+          <button type="button" class="fab-add" id="openAddBtn">+</button>
+        </div>
+
+        <ul class="alarm-list" id="alarmList"></ul>
+
+        <div class="save-alarms-row">
+          <button type="button" class="news-btn" id="openNewsBtn">📰 최근뉴스</button>
+        </div>
       </div>
     </div>
-    <h1>알람</h1>
 
-    <div class="clock" id="clock">00:00:00</div>
+    <div class="tab-page" id="tabPage-news" data-tab-page="news" hidden>
+      <div class="news-box">
+        <div class="news-box-sticky-top">
+          <div class="news-box-header">
+            <div class="news-header-left">
+              <span class="news-box-title">최근뉴스</span>
+              <div class="news-refreshed-row">
+                <button type="button" class="news-refresh-btn news-refresh-btn-inline" id="newsRefreshBtn" title="새로고침">
+                  <svg id="newsRefreshIcon" class="news-refresh-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8" />
+                    <path d="M21 3v5h-5" />
+                    <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16" />
+                    <path d="M3 21v-5h5" />
+                  </svg>
+                </button>
+                <span class="news-refreshed-at" data-keyword-slot="1"></span>
+              </div>
+            </div>
+            <div class="news-header-actions">
+              <button type="button" class="save-alarms-btn" id="saveAlarmsBtn">💾 지금 저장</button>
+              <a
+                href="https://docs.google.com/spreadsheets/d/1GSkyVyhoKIl0hLsKEXRtBnM6TeVa01I5xEVgz5t40TY/edit?gid=110008335&range=A1#gid=110008335&range=A1"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="news-sheet-link"
+                title="저장 시트 열기"
+                >📊 시트 보기</a
+              >
+            </div>
+          </div>
+          <div class="news-search-row">
+            <input
+              type="text"
+              id="newsSearchInput"
+              class="news-search-input"
+              placeholder="관심 키워드를 검색해보세요 (예: 부동산)"
+              maxlength="20"
+            />
+            <button type="button" class="news-search-btn" id="newsSearchBtn">🔍 검색</button>
+          </div>
+        </div>
+        <div class="news-search-result" id="newsSearchResult"></div>
 
-    <div class="list-header">
-      <span class="list-title">알람 목록</span>
-      <button type="button" class="fab-add" id="openAddBtn">+</button>
-    </div>
-
-    <ul class="alarm-list" id="alarmList"></ul>
-
-    <div class="save-alarms-row">
-      <button type="button" class="news-btn" id="openNewsBtn">📰 최근뉴스</button>
-      <button type="button" class="news-refresh-btn" id="newsRefreshBtn" title="새로고침">
-        <svg id="newsRefreshIcon" class="news-refresh-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8" />
-          <path d="M21 3v5h-5" />
-          <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16" />
-          <path d="M3 21v-5h5" />
-        </svg>
-      </button>
-    </div>
-  </div>
-
-  <div class="news-panel" id="newsOverlay">
-    <div class="news-box">
-      <div class="news-box-sticky-top">
-      <div class="news-box-header">
-        <div class="news-box-header-left">
-          <span class="news-box-title">최근뉴스</span>
-          <button type="button" class="save-alarms-btn" id="saveAlarmsBtn">💾 지금 저장</button>
-          <a
-            href="https://docs.google.com/spreadsheets/d/1GSkyVyhoKIl0hLsKEXRtBnM6TeVa01I5xEVgz5t40TY/edit?gid=110008335&range=A1#gid=110008335&range=A1"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="news-sheet-link"
-            title="저장 시트 열기"
-            >📊 시트 보기</a
-          >
+        <div class="keyword-switch" id="keywordSwitch">
+          <button type="button" class="keyword-switch-btn active" data-keyword-slot="1" id="keywordSwitchBtn1">키워드1</button>
+          <button type="button" class="keyword-switch-btn" data-keyword-slot="2" id="keywordSwitchBtn2">키워드2</button>
+        </div>
+        <div class="news-meta-row">
           <span class="save-alarms-status" id="saveAlarmsStatus"></span>
+          <div class="news-meta-right">
+            <label class="news-select-all-row">
+              <input type="checkbox" id="newsSelectAllCheckbox" />
+              뉴스 전체 선택
+            </label>
+            <button type="button" class="news-more-all-btn" id="newsMoreAllBtn">▼ 전체 더보기</button>
+          </div>
         </div>
-        <button type="button" class="news-close-btn" id="closeNewsBtn">✕</button>
-      </div>
-      <div class="news-search-row">
-        <input
-          type="text"
-          id="newsSearchInput"
-          class="news-search-input"
-          placeholder="관심 키워드를 검색해보세요 (예: 부동산)"
-          maxlength="20"
-        />
-        <button type="button" class="news-search-btn" id="newsSearchBtn">🔍 검색</button>
-      </div>
-      <div class="news-search-result" id="newsSearchResult"></div>
-      <div class="news-meta-row">
-        <span class="news-refreshed-at" id="newsRefreshedAt"></span>
-        <div class="news-meta-right">
-          <label class="news-select-all-row">
-            <input type="checkbox" id="newsSelectAllCheckbox" />
-            뉴스 전체 선택
-          </label>
-          <button type="button" class="news-more-all-btn" id="newsMoreAllBtn">▼ 전체 더보기</button>
+        <div class="news-list" id="newsTableKeyword" data-active-slot="1">
+          <div class="news-keyword-col" data-keyword-slot="1" id="newsTableKeyword1"></div>
+          <div class="news-keyword-col" data-keyword-slot="2" id="newsTableKeyword2"></div>
         </div>
       </div>
+    </div>
+
+    <div class="tab-page" id="tabPage-settings" data-tab-page="settings" hidden>
+      <div class="app">
+        <div class="news-box-header">
+          <span class="news-box-title">⚙️ 설정</span>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">다크모드</span>
+              <span class="settings-row-desc">어두운 화면 테마로 전환합니다</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="darkModeToggle" />
+              <span class="settings-toggle-track"></span>
+            </label>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">글자 크기</span>
+              <span class="settings-row-desc">화면 전체 글자·요소 크기를 조절합니다</span>
+            </div>
+            <div class="settings-segment" id="fontScaleSegment">
+              <button type="button" class="settings-segment-btn" data-font-scale="sm">작게</button>
+              <button type="button" class="settings-segment-btn active" data-font-scale="md">보통</button>
+              <button type="button" class="settings-segment-btn" data-font-scale="lg">크게</button>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">데이터 초기화</span>
+              <span class="settings-row-desc">이 브라우저에 저장된 지정 키워드·뉴스 캐시를 초기화합니다 (알람은 유지)</span>
+            </div>
+            <button type="button" class="settings-danger-btn" id="resetLocalDataBtn">초기화</button>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">앱 정보</span>
+              <span class="settings-row-desc">알람 앱 · 홈 화면에 설치해서 사용할 수 있어요 (PWA)</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="news-list" id="newsTable"></div>
     </div>
   </div>
-  </div>
+
+  <nav class="bottom-tab-bar" id="bottomTabBar">
+    <button type="button" class="tab-btn active" data-tab="alarm">
+      <span class="tab-icon">⏰</span><span class="tab-label">알람</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="news">
+      <span class="tab-icon">📰</span><span class="tab-label">뉴스</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="settings">
+      <span class="tab-icon">⚙️</span><span class="tab-label">설정</span>
+    </button>
+  </nav>
 
   <div class="add-alarm-overlay" id="addAlarmOverlay">
     <div class="add-alarm-box">
@@ -224,6 +297,16 @@
         <button id="stopBtn">알람 끄기</button>
       </div>
       <div class="briefing-list" id="newsBriefingList"></div>
+    </div>
+  </div>
+
+  <div class="app-modal-overlay" id="appModalOverlay">
+    <div class="app-modal-box">
+      <p class="app-modal-message" id="appModalMessage"></p>
+      <div class="app-modal-actions">
+        <button type="button" class="app-modal-cancel-btn" id="appModalCancelBtn" hidden>취소</button>
+        <button type="button" class="app-modal-confirm-btn" id="appModalConfirmBtn">확인</button>
+      </div>
     </div>
   </div>
 

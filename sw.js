@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alarm-app-shell-v1';
+const CACHE_NAME = 'alarm-app-shell-v13';
 
 const SHELL_PATHS = [
   './',
