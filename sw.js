@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alarm-app-shell-v17-radar';
+const CACHE_NAME = 'alarm-app-shell-v18-font-xl';
 
 const SHELL_PATHS = [
   './',

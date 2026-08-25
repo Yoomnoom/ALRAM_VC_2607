@@ -1130,7 +1130,7 @@ if (darkModeToggle) {
 }
 
 const FONT_SCALE_KEY = "fontScale";
-const FONT_SCALE_VALUES = { sm: 0.9, md: 1, lg: 1.15 };
+const FONT_SCALE_VALUES = { sm: 0.9, md: 1, lg: 1.15, xl: 1.3 };
 const fontScaleButtons = document.querySelectorAll(".settings-segment-btn[data-font-scale]");
 
 function applyFontScale(scale) {
