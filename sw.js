@@ -1,10 +1,10 @@
-const CACHE_NAME = 'alarm-app-shell-v24-wide-settings';
+const CACHE_NAME = 'alarm-app-shell-v25-settings-boxes';
 
 const SHELL_PATHS = [
   './',
   './index.html',
-  './style.css?v=24',
-  './script.js?v=23',
+  './style.css?v=25',
+  './script.js?v=25',
   './news/news.js',
   './news/news.css',
   './radar/radar.js',

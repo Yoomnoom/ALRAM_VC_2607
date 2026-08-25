@@ -96,34 +96,27 @@ body {
   margin-top: 8px;
 }
 
-.settings-view-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 12px;
-  background: #eef4f8;
-}
-
-.settings-view-tab {
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: #8a94a0;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.settings-view-tab.active {
+.settings-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #dce8ef;
+  border-radius: 18px;
   background: #fff;
-  color: #5f97bd;
 }
 
-.settings-view-panel[hidden] { display: none; }
-.settings-view-panel[data-settings-panel="general"] { display: flex; flex-direction: column; gap: 22px; }
-.settings-view-panel[data-settings-panel="general"][hidden] { display: none; }
+.settings-box-title {
+  margin: 0;
+  color: #3d3a36;
+  font-size: 16px;
+}
+
+.settings-box .weather-forecast-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
 
 .settings-group {
   display: flex;
@@ -256,8 +249,8 @@ body {
 
 .weather-forecast-card { padding: 16px; border: 1px solid #dce8ef; border-radius: 16px; background: #fff; }
 .weather-forecast-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.weather-forecast-header h2, .weather-forecast-header p { margin: 0; }
-.weather-forecast-header h2 { color: #3d3a36; font-size: 14px; }
+.weather-forecast-header h3, .weather-forecast-header p { margin: 0; }
+.weather-forecast-header h3 { color: #3d3a36; font-size: 14px; }
 .weather-forecast-header p, .weather-forecast-content { color: #8a94a0; font-size: 11px; }
 .weather-forecast-header p { margin-top: 3px; }
 .weather-forecast-refresh { flex-shrink: 0; padding: 7px 10px; border: 1px solid #dce8ef; border-radius: 9px; background: #fff; color: #5f97bd; font-size: 11px; font-weight: bold; cursor: pointer; }
@@ -1466,15 +1459,16 @@ body.dark-theme .snooze-min-btn,
 body.dark-theme .settings-row,
 body.dark-theme .settings-segment,
 body.dark-theme .weather-forecast-card,
-body.dark-theme .settings-view-tabs {
+body.dark-theme .settings-box {
   background: #2f343b;
   color: #e8eaed;
 }
 
 body.dark-theme .weather-forecast-card,
-body.dark-theme .weather-forecast-refresh { border-color: #444b53; }
-body.dark-theme .weather-forecast-header h2 { color: #e8eaed; }
-body.dark-theme .settings-view-tab.active { background: #24282e; color: #8ec3e0; }
+body.dark-theme .weather-forecast-refresh,
+body.dark-theme .settings-box { border-color: #444b53; }
+body.dark-theme .weather-forecast-header h3,
+body.dark-theme .settings-box-title { color: #e8eaed; }
 body.dark-theme .weather-chart-temp { fill: #e8eaed; }
 body.dark-theme .weather-forecast-refresh { background: #24282e; }
 body.dark-theme .weather-chart-grid { stroke: #444b53; }
