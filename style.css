@@ -538,7 +538,7 @@ body {
 
 @media (min-width: 601px) {
   #tabPage-settings .app {
-    width: 460px;
+    width: 720px;
     max-width: 92vw;
   }
 }
