@@ -47,6 +47,7 @@ const minuteHand = document.getElementById("minuteHand");
 const secondHand = document.getElementById("secondHand");
 const weatherEl = document.getElementById("weather");
 const weatherBg = document.getElementById("weatherBg");
+const weatherLocationSelect = document.getElementById("weatherLocationSelect");
 const weatherPreviewSelect = document.getElementById("weatherPreviewSelect");
 const dayPicker = document.getElementById("dayPicker");
 const dayButtons = dayPicker.querySelectorAll(".day-btn");
@@ -825,8 +826,18 @@ function renderAlarms() {
   }
 }
 
-const WEATHER_URL =
-  "https://api.openweathermap.org/data/2.5/weather?lat=37.5665&lon=126.978&appid=7aeb250b3e494925d6b0217fa62ea065&units=metric";
+const WEATHER_API_KEY = "7aeb250b3e494925d6b0217fa62ea065";
+const WEATHER_LOCATION_KEY = "weatherLocation";
+
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 10 * 60 * 1000,
+    });
+  });
+}
 
 const WEATHER_EMOJI = {
   Clear: "☀️",
@@ -986,20 +997,37 @@ function setWeatherBackground(condition) {
 
 async function loadWeather() {
   try {
-    const res = await fetch(WEATHER_URL);
+    const location = weatherLocationSelect.value;
+    const params = new URLSearchParams({ appid: WEATHER_API_KEY, units: "metric", lang: "kr" });
+    if (location) {
+      params.set("q", location);
+    } else {
+      if (!navigator.geolocation) throw new Error("geolocation is not supported");
+      const { coords } = await getCurrentPosition();
+      params.set("lat", coords.latitude);
+      params.set("lon", coords.longitude);
+    }
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?${params}`);
     if (!res.ok) throw new Error("weather request failed: " + res.status);
     const data = await res.json();
     const celsius = data.main?.temp;
     if (typeof celsius !== "number") throw new Error("no temp field in response");
     const condition = data.weather?.[0]?.main;
     const emoji = WEATHER_EMOJI[condition] || "🌡️";
-    weatherEl.textContent = `${emoji} 서울 ${celsius.toFixed(1)}°C`;
+    weatherEl.textContent = `${emoji} ${data.name || "현재 위치"} ${celsius.toFixed(1)}°C`;
     setWeatherBackground(condition);
   } catch (err) {
     weatherEl.textContent = "기온 정보를 불러올 수 없습니다.";
     console.error(err);
   }
 }
+
+weatherLocationSelect.value = localStorage.getItem(WEATHER_LOCATION_KEY) || "";
+weatherLocationSelect.addEventListener("change", () => {
+  localStorage.setItem(WEATHER_LOCATION_KEY, weatherLocationSelect.value);
+  weatherPreviewSelect.value = "";
+  loadWeather();
+});
 
 weatherPreviewSelect.addEventListener("change", () => {
   const condition = weatherPreviewSelect.value;

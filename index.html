@@ -19,16 +19,37 @@
     <div class="tab-page" id="tabPage-alarm" data-tab-page="alarm">
       <div class="app">
         <div class="weather" id="weather">기온 불러오는 중...</div>
-        <select id="weatherPreviewSelect" class="weather-preview-select">
-          <option value="">🔍 날씨 배경 미리보기</option>
-          <option value="Clear">☀️ 맑음</option>
-          <option value="Clouds">☁️ 구름</option>
-          <option value="Rain">🌧️ 비</option>
-          <option value="Drizzle">🌦️ 이슬비</option>
-          <option value="Thunderstorm">⛈️ 뇌우</option>
-          <option value="Snow">❄️ 눈</option>
-          <option value="Mist">🌫️ 안개</option>
-        </select>
+        <div class="weather-controls" aria-label="날씨 설정">
+          <label class="weather-control">
+            <span>지역</span>
+            <select id="weatherLocationSelect">
+              <option value="">📍 현재 위치</option>
+              <option value="Seoul,KR">서울</option>
+              <option value="Busan,KR">부산</option>
+              <option value="Daegu,KR">대구</option>
+              <option value="Incheon,KR">인천</option>
+              <option value="Gwangju,KR">광주</option>
+              <option value="Daejeon,KR">대전</option>
+              <option value="Ulsan,KR">울산</option>
+              <option value="Sejong,KR">세종</option>
+              <option value="Suwon,KR">수원</option>
+              <option value="Jeju City,KR">제주</option>
+            </select>
+          </label>
+          <label class="weather-control">
+            <span>날씨 배경</span>
+            <select id="weatherPreviewSelect">
+              <option value="">현재 날씨</option>
+              <option value="Clear">☀️ 맑음</option>
+              <option value="Clouds">☁️ 구름</option>
+              <option value="Rain">🌧️ 비</option>
+              <option value="Drizzle">🌦️ 이슬비</option>
+              <option value="Thunderstorm">⛈️ 뇌우</option>
+              <option value="Snow">❄️ 눈</option>
+              <option value="Mist">🌫️ 안개</option>
+            </select>
+          </label>
+        </div>
 
         <div class="hero-clock">
           <img src="images/알람시계_re.png" alt="알람 시계" class="hero-image" />

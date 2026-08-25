@@ -939,10 +939,22 @@ h1 {
   margin-bottom: 8px;
 }
 
-.weather-preview-select {
-  display: block;
+.weather-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
   margin: 0 auto 12px;
-  padding: 4px 10px;
+}
+
+.weather-control {
+  display: grid;
+  gap: 4px;
+  color: #8a94a0;
+  font-size: 10px;
+}
+
+.weather-control select {
+  padding: 5px 8px;
   border: none;
   border-radius: 10px;
   outline: none;
@@ -950,6 +962,10 @@ h1 {
   color: #8a94a0;
   font-size: 11px;
   cursor: pointer;
+}
+
+.weather-control select:focus-visible {
+  box-shadow: 0 0 0 2px #8ec3e0;
 }
 
 .ringing-overlay {
@@ -1373,7 +1389,7 @@ body.dark-theme .interval-row input[type="number"],
 body.dark-theme .time-display,
 body.dark-theme .cancel-add-btn,
 body.dark-theme .day-btn,
-body.dark-theme .weather-preview-select,
+body.dark-theme .weather-control select,
 body.dark-theme .time-picker-numbers input,
 body.dark-theme .ampm-btn,
 body.dark-theme .mode-btn,
@@ -1392,7 +1408,7 @@ body.dark-theme .add-alarm input:focus {
 }
 
 body.dark-theme .day-btn,
-body.dark-theme .weather-preview-select,
+body.dark-theme .weather-control select,
 body.dark-theme .ampm-btn,
 body.dark-theme .mode-btn,
 body.dark-theme .snooze-min-btn,
