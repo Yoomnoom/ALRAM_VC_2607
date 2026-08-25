@@ -20,10 +20,10 @@ function buildRadarFunctionUrl(configuredUrl, functionName) {
 }
 
 const RADAR_FUNCTION_URL = {
-  kstartup: buildRadarFunctionUrl(CONFIG.SUPABASE_KSTARTUP_FUNCTION_URL, "kstartup-search"),
-  bizinfo: buildRadarFunctionUrl(CONFIG.SUPABASE_BIZINFO_FUNCTION_URL, "bizinfo-search"),
-  bizinfoEvent: buildRadarFunctionUrl(CONFIG.SUPABASE_BIZINFOEVENT_FUNCTION_URL, "bizinfo-event-search"),
-  blog: buildRadarFunctionUrl(CONFIG.SUPABASE_BLOG_FUNCTION_URL, "blog-search"),
+  kstartup: buildRadarFunctionUrl(CONFIG.SUPABASE_KSTARTUP_FUNCTION_URL, "kstartup-search-260826"),
+  bizinfo: buildRadarFunctionUrl(CONFIG.SUPABASE_BIZINFO_FUNCTION_URL, "bizinfo-search-260826"),
+  bizinfoEvent: buildRadarFunctionUrl(CONFIG.SUPABASE_BIZINFOEVENT_FUNCTION_URL, "bizinfo-event-search-260826"),
+  blog: buildRadarFunctionUrl(CONFIG.SUPABASE_BLOG_FUNCTION_URL, "blog-search-260826"),
 };
 
 const RADAR_PLATFORM_SOURCES = [

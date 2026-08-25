@@ -21,7 +21,8 @@
 
 ## 데이터/보안 원칙
 
-- 외부 API 키는 절대 이 파일들에 하드코딩하지 않는다. 반드시 Supabase Edge Function(`supabase/functions/kstartup-search`, `supabase/functions/bizinfo-search` 등) 경유로만 호출한다.
+- 외부 API 키는 절대 이 파일들에 하드코딩하지 않는다. 반드시 Supabase Edge Function(`supabase/functions/kstartup-search-260826`, `supabase/functions/bizinfo-search-260826` 등) 경유로만 호출한다.
+- Supabase Edge Function 이름은 중복을 피하기 위해 `기능명-YYMMDD` 형식으로 작성한다.
 - 저장 키워드는 `localStorage`(`radarKeywords` 키)에만 저장하며, 뉴스 탭의 `newsKeywords`와 절대 공유하지 않는다.
 - 검색 결과(지원사업 공고, 뉴스 등)는 서버/DB에 영구 저장하지 않는다. 세션 중 화면 렌더링 용도로만 메모리에 보관한다.
 - 검색 관심도(데이터랩)는 "검색량"이라는 표현을 쓰지 않고 "검색 관심도" 또는 "상대 관심도"라고만 표기한다.
