@@ -1014,7 +1014,12 @@ async function loadWeather() {
     if (typeof celsius !== "number") throw new Error("no temp field in response");
     const condition = data.weather?.[0]?.main;
     const emoji = WEATHER_EMOJI[condition] || "🌡️";
-    weatherEl.textContent = `${emoji} ${data.name || "현재 위치"} ${celsius.toFixed(1)}°C`;
+    const matchedLocation = [...weatherLocationSelect.options].find(
+      (option) => option.value.split(",")[0].toLowerCase() === data.name?.toLowerCase()
+    );
+    if (!location && matchedLocation) weatherLocationSelect.value = matchedLocation.value;
+    const locationName = matchedLocation?.textContent || data.name || "현재 위치";
+    weatherEl.textContent = `${emoji} ${locationName} ${celsius.toFixed(1)}°C`;
     setWeatherBackground(condition);
   } catch (err) {
     weatherEl.textContent = "기온 정보를 불러올 수 없습니다.";
@@ -1064,6 +1069,14 @@ function switchTab(tabName, opts = {}) {
       if (typeof fetchNewsIfNeeded === "function") fetchNewsIfNeeded();
     } catch (err) {
       console.error("뉴스 탭 로딩 실패:", err);
+    }
+  }
+
+  if (tabName === "radar") {
+    try {
+      if (typeof fetchRadarIfNeeded === "function") fetchRadarIfNeeded();
+    } catch (err) {
+      console.error("관심 레이더 탭 로딩 실패:", err);
     }
   }
 }

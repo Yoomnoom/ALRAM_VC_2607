@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="news/news.css" />
+<link rel="stylesheet" href="radar/radar.css" />
 </head>
 <body>
   <div class="weather-bg" id="weatherBg"></div>
@@ -140,6 +141,47 @@
       </div>
     </div>
 
+    <div class="tab-page" id="tabPage-radar" data-tab-page="radar" hidden>
+      <div class="radar-box" id="radarBox">
+        <div class="radar-sticky-top">
+          <div class="radar-header">
+            <div class="radar-header-left">
+              <span class="radar-eyebrow">나의 관심 브리핑</span>
+              <span class="radar-title">관심 레이더</span>
+              <span class="radar-updated-at" id="radarUpdatedAt"></span>
+            </div>
+            <div class="radar-header-actions">
+              <button type="button" class="radar-refresh-btn" id="radarRefreshBtn" title="새로고침">
+                <svg class="radar-refresh-icon" id="radarRefreshIcon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16" />
+                  <path d="M3 21v-5h5" />
+                </svg>
+              </button>
+              <button type="button" class="radar-keyword-manage-btn" id="radarKeywordManageBtn" data-tooltip="관심사를 저장하면 관련 지원사업과 뉴스를 빠르게 확인할 수 있어요.">관심사 관리</button>
+            </div>
+          </div>
+          <div class="radar-keyword-tabs" id="radarKeywordTabs"></div>
+          <div class="radar-search-row">
+            <input type="text" id="radarSearchInput" class="radar-search-input" placeholder="새로운 관심사를 찾아보세요" maxlength="30" />
+            <button type="button" class="radar-search-btn" id="radarSearchBtn">찾아보기</button>
+          </div>
+          <div class="radar-type-filter" id="radarTypeFilter">
+            <button type="button" class="radar-chip active" data-radar-type="all">전체</button>
+            <button type="button" class="radar-chip" data-radar-type="urgent">놓치면 안 됨</button>
+            <button type="button" class="radar-chip" data-radar-type="opportunity">지원·행사</button>
+            <button type="button" class="radar-chip" data-radar-type="trend">뉴스·동향</button>
+            <button type="button" class="radar-chip" data-radar-type="market">시장 반응</button>
+            <button type="button" class="radar-chip" data-radar-type="idea">콘텐츠 아이디어</button>
+          </div>
+        </div>
+        <div class="radar-summary" id="radarSummary" hidden></div>
+        <div class="radar-source-status" id="radarSourceStatus"></div>
+        <div class="radar-result-list" id="radarResultList"></div>
+      </div>
+    </div>
+
     <div class="tab-page" id="tabPage-settings" data-tab-page="settings" hidden>
       <div class="app">
         <div class="news-box-header">
@@ -195,6 +237,9 @@
     </button>
     <button type="button" class="tab-btn" data-tab="news">
       <span class="tab-icon">📰</span><span class="tab-label">뉴스</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="radar">
+      <span class="tab-icon">📡</span><span class="tab-label">관심 레이더</span>
     </button>
     <button type="button" class="tab-btn" data-tab="settings">
       <span class="tab-icon">⚙️</span><span class="tab-label">설정</span>
@@ -335,6 +380,7 @@
   <script src="config.js"></script>
   <script src="script.js"></script>
   <script src="news/news.js"></script>
+  <script src="radar/radar.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
