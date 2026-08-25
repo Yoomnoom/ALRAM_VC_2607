@@ -1113,9 +1113,9 @@ function buildWeatherForecastSvg(items) {
   const min = Math.min(...temperatures);
   const range = Math.max(Math.max(...temperatures) - min, 4);
   const points = temperatures.map((temp, index) => ({ x: 35 + index * 70, y: 118 - ((temp - min) / range) * 76, temp }));
-  const grid = [42, 80, 118].map((y) => `<line class="weather-chart-grid" x1="20" y1="${y}" x2="530" y2="${y}" />`).join("");
+  const grid = [42, 80, 118].map((y) => `<line class="weather-chart-grid" x1="20" y1="${y}" x2="540" y2="${y}" />`).join("");
   const labels = points.map(({ x, y, temp }) => `<text class="weather-chart-temp" x="${x}" y="${y - 11}">${Math.round(temp)}°</text><circle class="weather-chart-point" cx="${x}" cy="${y}" r="4" />`).join("");
-  return `<svg viewBox="0 0 550 145" role="img" aria-label="24시간 기온 변화 그래프">${grid}<polyline class="weather-chart-line" points="${points.map(({ x, y }) => `${x},${y}`).join(" ")}" />${labels}</svg>`;
+  return `<svg viewBox="0 0 560 145" role="img" aria-label="24시간 기온 변화 그래프">${grid}<polyline class="weather-chart-line" points="${points.map(({ x, y }) => `${x},${y}`).join(" ")}" />${labels}</svg>`;
 }
 
 async function loadWeatherForecast(force = false) {

@@ -1,10 +1,10 @@
-const CACHE_NAME = 'alarm-app-shell-v25-settings-boxes';
+const CACHE_NAME = 'alarm-app-shell-v26-weather-alignment';
 
 const SHELL_PATHS = [
   './',
   './index.html',
   './style.css?v=25',
-  './script.js?v=25',
+  './script.js?v=26',
   './news/news.js',
   './news/news.css',
   './radar/radar.js',
