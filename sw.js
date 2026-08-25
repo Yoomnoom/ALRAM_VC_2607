@@ -1,10 +1,10 @@
-const CACHE_NAME = 'alarm-app-shell-v18-font-xl';
+const CACHE_NAME = 'alarm-app-shell-v19-font-xl-fix';
 
 const SHELL_PATHS = [
   './',
   './index.html',
   './style.css',
-  './script.js',
+  './script.js?v=19',
   './news/news.js',
   './news/news.css',
   './radar/radar.js',
