@@ -1,9 +1,9 @@
-const CACHE_NAME = 'alarm-app-shell-v21-weather-style';
+const CACHE_NAME = 'alarm-app-shell-v22-settings-hierarchy';
 
 const SHELL_PATHS = [
   './',
   './index.html',
-  './style.css?v=21',
+  './style.css?v=22',
   './script.js?v=20',
   './news/news.js',
   './news/news.css',
