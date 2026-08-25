@@ -1,10 +1,10 @@
-const CACHE_NAME = 'alarm-app-shell-v22-settings-hierarchy';
+const CACHE_NAME = 'alarm-app-shell-v23-settings-views';
 
 const SHELL_PATHS = [
   './',
   './index.html',
-  './style.css?v=22',
-  './script.js?v=20',
+  './style.css?v=23',
+  './script.js?v=23',
   './news/news.js',
   './news/news.css',
   './radar/radar.js',

@@ -1054,6 +1054,21 @@ weatherLocationSelect.addEventListener("change", () => {
 
 document.getElementById("weatherForecastRefreshBtn")?.addEventListener("click", () => loadWeatherForecast(true));
 
+document.querySelectorAll("[data-settings-view]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const view = button.dataset.settingsView;
+    document.querySelectorAll("[data-settings-view]").forEach((tab) => {
+      const active = tab.dataset.settingsView === view;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+    });
+    document.querySelectorAll("[data-settings-panel]").forEach((panel) => {
+      panel.hidden = panel.dataset.settingsPanel !== view;
+    });
+    if (view === "weather") loadWeatherForecast();
+  });
+});
+
 weatherPreviewSelect.addEventListener("change", () => {
   const condition = weatherPreviewSelect.value;
   if (!condition) {
