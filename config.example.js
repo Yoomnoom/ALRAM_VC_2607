@@ -9,4 +9,5 @@ const CONFIG = {
   SUPABASE_KOCCA_FUNCTION_URL: "",
   SUPABASE_DATALAB_FUNCTION_URL: "",
   SUPABASE_BLOG_FUNCTION_URL: "https://YOUR_PROJECT_REF.supabase.co/functions/v1/blog-search-260826",
+  SUPABASE_WEATHER_FUNCTION_URL: "https://YOUR_PROJECT_REF.supabase.co/functions/v1/weather-forecast-260826",
 };

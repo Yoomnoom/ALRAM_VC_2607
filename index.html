@@ -200,6 +200,19 @@
             </label>
           </div>
 
+          <section class="weather-forecast-card" aria-labelledby="weatherForecastTitle">
+            <div class="weather-forecast-header">
+              <div>
+                <h2 id="weatherForecastTitle">앞으로 24시간</h2>
+                <p id="weatherForecastLocation">선택한 지역의 시간대별 예보입니다</p>
+              </div>
+              <button type="button" class="weather-forecast-refresh" id="weatherForecastRefreshBtn">새로고침</button>
+            </div>
+            <div class="weather-forecast-content" id="weatherForecastContent" aria-live="polite">
+              설정 탭을 열면 예보를 불러옵니다.
+            </div>
+          </section>
+
           <div class="settings-row">
             <div class="settings-row-label">
               <span class="settings-row-title">글자 크기</span>
@@ -379,7 +392,7 @@
   </div>
 
   <script src="config.js"></script>
-  <script src="script.js?v=19"></script>
+  <script src="script.js?v=20"></script>
   <script src="news/news.js"></script>
   <script src="radar/radar.js"></script>
   <script>

@@ -826,8 +826,11 @@ function renderAlarms() {
   }
 }
 
-const WEATHER_API_KEY = "7aeb250b3e494925d6b0217fa62ea065";
 const WEATHER_LOCATION_KEY = "weatherLocation";
+const WEATHER_CACHE_MS = 10 * 60 * 1000;
+const WEATHER_FUNCTION_URL = CONFIG.SUPABASE_WEATHER_FUNCTION_URL ||
+  (CONFIG.SUPABASE_NEWS_FUNCTION_URL || "").replace(/\/naver-news$/, "/weather-forecast-260826");
+let weatherCache = null;
 
 function getCurrentPosition() {
   return new Promise((resolve, reject) => {
@@ -995,21 +998,34 @@ function setWeatherBackground(condition) {
   }
 }
 
-async function loadWeather() {
+async function fetchWeatherBundle(force = false) {
+  if (!WEATHER_FUNCTION_URL) throw new Error("weather function URL is not configured");
+  const location = weatherLocationSelect.value;
+  const body = location ? { location } : {};
+  if (!location) {
+    if (!navigator.geolocation) throw new Error("geolocation is not supported");
+    const { coords } = await getCurrentPosition();
+    body.lat = coords.latitude;
+    body.lon = coords.longitude;
+  }
+  const cacheKey = location || `${Number(body.lat).toFixed(2)},${Number(body.lon).toFixed(2)}`;
+  if (!force && weatherCache?.key === cacheKey && Date.now() - weatherCache.savedAt < WEATHER_CACHE_MS) return weatherCache.data;
+  const res = await fetch(WEATHER_FUNCTION_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("weather request failed: " + res.status);
+  const data = await res.json();
+  weatherCache = { key: cacheKey, savedAt: Date.now(), data };
+  return data;
+}
+
+async function loadWeather(force = false) {
   try {
     const location = weatherLocationSelect.value;
-    const params = new URLSearchParams({ appid: WEATHER_API_KEY, units: "metric", lang: "kr" });
-    if (location) {
-      params.set("q", location);
-    } else {
-      if (!navigator.geolocation) throw new Error("geolocation is not supported");
-      const { coords } = await getCurrentPosition();
-      params.set("lat", coords.latitude);
-      params.set("lon", coords.longitude);
-    }
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?${params}`);
-    if (!res.ok) throw new Error("weather request failed: " + res.status);
-    const data = await res.json();
+    const bundle = await fetchWeatherBundle(force);
+    const data = bundle.current;
     const celsius = data.main?.temp;
     if (typeof celsius !== "number") throw new Error("no temp field in response");
     const condition = data.weather?.[0]?.main;
@@ -1030,9 +1046,13 @@ async function loadWeather() {
 weatherLocationSelect.value = localStorage.getItem(WEATHER_LOCATION_KEY) || "";
 weatherLocationSelect.addEventListener("change", () => {
   localStorage.setItem(WEATHER_LOCATION_KEY, weatherLocationSelect.value);
+  weatherCache = null;
   weatherPreviewSelect.value = "";
-  loadWeather();
+  loadWeather(true);
+  if (!document.getElementById("tabPage-settings").hidden) loadWeatherForecast();
 });
+
+document.getElementById("weatherForecastRefreshBtn")?.addEventListener("click", () => loadWeatherForecast(true));
 
 weatherPreviewSelect.addEventListener("change", () => {
   const condition = weatherPreviewSelect.value;
@@ -1078,6 +1098,51 @@ function switchTab(tabName, opts = {}) {
     } catch (err) {
       console.error("관심 레이더 탭 로딩 실패:", err);
     }
+  }
+
+  if (tabName === "settings") loadWeatherForecast();
+}
+
+function buildWeatherHourLabel(timestamp, timezone) {
+  const date = new Date((timestamp + timezone) * 1000);
+  return `${String(date.getUTCMonth() + 1).padStart(2, "0")}.${String(date.getUTCDate()).padStart(2, "0")} ${String(date.getUTCHours()).padStart(2, "0")}시`;
+}
+
+function buildWeatherForecastSvg(items) {
+  const temperatures = items.map((item) => Number(item.main.temp));
+  const min = Math.min(...temperatures);
+  const range = Math.max(Math.max(...temperatures) - min, 4);
+  const points = temperatures.map((temp, index) => ({ x: 35 + index * 70, y: 118 - ((temp - min) / range) * 76, temp }));
+  const grid = [42, 80, 118].map((y) => `<line class="weather-chart-grid" x1="20" y1="${y}" x2="530" y2="${y}" />`).join("");
+  const labels = points.map(({ x, y, temp }) => `<text class="weather-chart-temp" x="${x}" y="${y - 11}">${Math.round(temp)}°</text><circle class="weather-chart-point" cx="${x}" cy="${y}" r="4" />`).join("");
+  return `<svg viewBox="0 0 550 145" role="img" aria-label="24시간 기온 변화 그래프">${grid}<polyline class="weather-chart-line" points="${points.map(({ x, y }) => `${x},${y}`).join(" ")}" />${labels}</svg>`;
+}
+
+async function loadWeatherForecast(force = false) {
+  const content = document.getElementById("weatherForecastContent");
+  const locationLabel = document.getElementById("weatherForecastLocation");
+  const refreshBtn = document.getElementById("weatherForecastRefreshBtn");
+  if (!content || !locationLabel || !refreshBtn) return;
+  content.className = "weather-forecast-content";
+  content.textContent = "24시간 예보를 불러오는 중입니다...";
+  refreshBtn.disabled = true;
+  try {
+    const data = await fetchWeatherBundle(force);
+    const items = Array.isArray(data.forecast?.list) ? data.forecast.list.slice(0, 8) : [];
+    if (!items.length) throw new Error("forecast data is empty");
+    locationLabel.textContent = `${data.current?.name || "선택한 지역"} · 3시간 간격`;
+    const slots = items.map((item) => {
+      const rainChance = Math.round((Number(item.pop) || 0) * 100);
+      const condition = item.weather?.[0]?.main;
+      return `<div class="weather-forecast-slot"><span>${buildWeatherHourLabel(item.dt, data.forecast.city?.timezone || 0)}</span><span class="weather-forecast-icon">${WEATHER_EMOJI[condition] || "🌡️"}</span><span class="weather-rain-track"><span class="weather-rain-bar" style="height:${rainChance}%"></span></span><span>비 ${rainChance}%</span></div>`;
+    }).join("");
+    content.innerHTML = `<div class="weather-chart-scroll"><div class="weather-chart">${buildWeatherForecastSvg(items)}<div class="weather-forecast-slots">${slots}</div></div></div><div class="weather-forecast-legend"><span>선은 예상 기온</span><span>막대는 강수확률</span></div>`;
+  } catch (err) {
+    content.classList.add("weather-forecast-error");
+    content.textContent = "시간대별 예보를 불러오지 못했습니다.";
+    console.error(err);
+  } finally {
+    refreshBtn.disabled = false;
   }
 }
 
