@@ -256,13 +256,13 @@ body {
 .weather-forecast-refresh { flex-shrink: 0; padding: 7px 10px; border: 1px solid #dce8ef; border-radius: 9px; background: #fff; color: #5f97bd; font-size: 11px; font-weight: bold; cursor: pointer; }
 .weather-forecast-refresh:disabled { cursor: wait; opacity: .55; }
 .weather-chart-scroll { overflow-x: auto; padding-bottom: 4px; }
-.weather-chart { min-width: 560px; }
-.weather-chart svg { display: block; width: 100%; height: 150px; overflow: visible; }
+.weather-chart { width: 560px; margin: 0 auto; }
+.weather-chart svg { display: block; width: 560px; height: 145px; overflow: visible; }
 .weather-chart-grid { stroke: #e8eef2; stroke-width: 1; }
 .weather-chart-line { fill: none; stroke: #5f97bd; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3; }
 .weather-chart-point { fill: #fff; stroke: #5f97bd; stroke-width: 2; }
 .weather-chart-temp { fill: #3d3a36; font-size: 11px; font-weight: bold; text-anchor: middle; }
-.weather-forecast-slots { display: grid; grid-template-columns: repeat(8, 1fr); min-width: 560px; }
+.weather-forecast-slots { display: grid; grid-template-columns: repeat(8, 1fr); width: 560px; }
 .weather-forecast-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; color: #8a94a0; font-size: 10px; }
 .weather-forecast-icon { font-size: 18px; }
 .weather-rain-track { width: 8px; height: 34px; display: flex; align-items: flex-end; overflow: hidden; border-radius: 4px; background: #eef4f8; }
