@@ -122,9 +122,24 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: 8px;
   -webkit-overflow-scrolling: touch;
 }
+
+.radar-type-filter,
+.radar-keyword-tabs {
+  scrollbar-width: thin;
+  scrollbar-color: #8ec3e0 #eef4f8;
+}
+
+.radar-type-filter::-webkit-scrollbar,
+.radar-keyword-tabs::-webkit-scrollbar { height: 8px; }
+.radar-type-filter::-webkit-scrollbar-track,
+.radar-keyword-tabs::-webkit-scrollbar-track { border-radius: 999px; background: #eef4f8; }
+.radar-type-filter::-webkit-scrollbar-thumb,
+.radar-keyword-tabs::-webkit-scrollbar-thumb { border-radius: 999px; background: #8ec3e0; }
+.radar-type-filter::-webkit-scrollbar-button,
+.radar-keyword-tabs::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 
 .radar-chip {
   flex: 0 0 auto;
@@ -498,7 +513,7 @@ body.dark-theme .radar-keyword-row {
 .radar-keyword-manage-btn { position: relative; }
 .radar-keyword-manage-btn::after { content: attr(data-tooltip); position: absolute; top: calc(100% + 9px); right: 0; width: 230px; padding: 9px 11px; border: 1px solid #dce8ef; border-radius: 10px; background: #fff; color: #5e6870; font-size: 11px; font-weight: 400; line-height: 1.45; text-align: left; box-shadow: 0 3px 10px rgba(50,70,82,.08); opacity: 0; pointer-events: none; transform: translateY(-3px); transition: opacity .15s ease, transform .15s ease; }
 .radar-keyword-manage-btn:hover::after, .radar-keyword-manage-btn:focus-visible::after { opacity: 1; transform: translateY(0); }
-.radar-keyword-tabs { display: flex; gap: 6px; overflow-x: auto; }
+.radar-keyword-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; }
 .radar-keyword-tabs:empty { display: none; }
 .radar-keyword-tab { flex: 0 0 auto; padding: 7px 11px; border: 1px solid #dce8ef; border-radius: 999px; background: #fff; color: #6f7880; cursor: pointer; font-size: 12px; }
 .radar-keyword-tab.active { border-color: #5f97bd; background: #eaf3f8; color: #3f7fa8; font-weight: 700; }
@@ -586,6 +601,12 @@ body.dark-theme .radar-blog-keywords > div span { background: #3f5664; color: #d
 body.dark-theme .radar-blog-references { border-color: #484842; }
 body.dark-theme .radar-blog-more-btn { background: #34342f; border-color: #484842; color: #b8d6e8; }
 body.dark-theme .radar-empty-state { background: rgba(52,52,47,.5); border-color: #484842; }
+body.dark-theme .radar-type-filter,
+body.dark-theme .radar-keyword-tabs { scrollbar-color: #5f97bd #343a40; }
+body.dark-theme .radar-type-filter::-webkit-scrollbar-track,
+body.dark-theme .radar-keyword-tabs::-webkit-scrollbar-track { background: #343a40; }
+body.dark-theme .radar-type-filter::-webkit-scrollbar-thumb,
+body.dark-theme .radar-keyword-tabs::-webkit-scrollbar-thumb { background: #5f97bd; }
 
 @media (max-width: 640px) {
   .radar-box { padding: 18px 14px 28px; border-radius: 20px; }

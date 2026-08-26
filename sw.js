@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alarm-app-shell-v28-mobile-settings';
+const CACHE_NAME = 'alarm-app-shell-v29-radar-scrollbars';
 
 const SHELL_PATHS = [
   './',
@@ -8,7 +8,7 @@ const SHELL_PATHS = [
   './news/news.js',
   './news/news.css',
   './radar/radar.js',
-  './radar/radar.css',
+  './radar/radar.css?v=29',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
